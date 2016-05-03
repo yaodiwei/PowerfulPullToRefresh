@@ -260,7 +260,7 @@ public class PowerfulPullToRefreshListView extends ListView {
 			onRefreshListener.onPullUpToRefresh();
 		}
 		if (isSmoothMovement && footerViewHeight!=0) {
-			startMyValueAnimator(footerView, false, footerViewHeight, 0);
+			startMyValueAnimator(footerView, false, -footerViewHeight, 0);
 		} else {
 			footerView.setPadding(0, 0, 0, 0);
 			setSelection(getCount() - 1);
@@ -274,10 +274,14 @@ public class PowerfulPullToRefreshListView extends ListView {
 			ivArrow.clearAnimation();
 			ivArrow.setVisibility(View.VISIBLE);
 			pbRotate.setVisibility(View.GONE);
-			headerView.setPadding(0, -headerViewHeight, 0, 0);
 			tvTime.setText(sdf.format(new Date()));
 			if (adapter instanceof BaseAdapter) {
 				((BaseAdapter) adapter).notifyDataSetChanged();
+			}
+			if (isSmoothMovement) {
+				startMyValueAnimator(headerView, true, 0, -headerViewHeight);
+			} else {
+				headerView.setPadding(0, -headerViewHeight, 0, 0);
 			}
 		} else { // 是上拉加载
 			upStatus = PULL_TO_REFRESH;
