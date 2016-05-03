@@ -85,30 +85,32 @@ public class PowerfulPullToRefreshListView extends ListView {
 		addFooterView(footerView);
 
 		// 方案二: 滚动闲置时候就执行上拉加载
-		// this.setOnScrollListener(new OnScrollListener() {
-		//
-		// @Override
-		// public void onScrollStateChanged(AbsListView view, int scrollState) {
-		// if (scrollState == OnScrollListener.SCROLL_STATE_IDLE && (view.getLastVisiblePosition() == view.getCount() - 1) && upStatus == PULL_TO_REFRESH) {
-		// Log.e("yao", "上拉加载:" + getCount());
-		// upStatus = REFRESHING;
-		// footerView.setPadding(0, 0, 0, 0);
-		// setSelection(getCount() - 1);
-		// footerView.postDelayed(new Runnable() {
-		//
-		// @Override
-		// public void run() {
-		// upStatus = PULL_TO_REFRESH;
-		// footerView.setPadding(0, 0, 0, -footerViewHeight);
-		// }
-		// }, 1000);
-		// }
-		// }
-		//
-		// @Override
-		// public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		// }
-		// });
+
+		/*this.setOnScrollListener(new OnScrollListener() {
+
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				if (scrollState == OnScrollListener.SCROLL_STATE_IDLE && (view.getLastVisiblePosition() == view.getCount() - 1) && upStatus == PULL_TO_REFRESH) {
+					Log.e("yao", "上拉加载:" + getCount());
+					upStatus = REFRESHING;
+					footerView.setPadding(0, 0, 0, 0);
+					setSelection(getCount() - 1);
+					footerView.postDelayed(new Runnable() {
+
+						@Override
+						public void run() {
+							upStatus = PULL_TO_REFRESH;
+							footerView.setPadding(0, 0, 0, -footerViewHeight);
+						}
+					}, 1000);
+				}
+			}
+
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+			}
+		});*/
+
 	}
 
 	private View initHeaderView(Context context) {
