@@ -6,15 +6,15 @@ package com.yao.powerfulpulltorefresh.view;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -22,7 +22,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.yao.powerfulpulltorefresh.ExampleAdapter;
 import com.yao.powerfulpulltorefresh.R;
 
 /**
@@ -37,7 +36,7 @@ public class PowerfulPullToRefreshListView extends ListView {
 
 	private int downStatus = PULL_TO_REFRESH;
 	private int upStatus = PULL_TO_REFRESH;
-	
+
 	private ImageView ivArrow;
 	private ProgressBar pbRotate;
 	private TextView tvStatus;
@@ -45,12 +44,14 @@ public class PowerfulPullToRefreshListView extends ListView {
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private ListAdapter adapter;
-	
+
 	private View headerView;
 	private int headerViewHeight;
 
 	private View footerView;
 	private int footerViewHeight;
+
+	private int paddingTop = 0;
 
 	private RotateAnimation pull = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 	private RotateAnimation release = new RotateAnimation(180, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -83,32 +84,31 @@ public class PowerfulPullToRefreshListView extends ListView {
 		footerView = initFooterView(context);
 		addFooterView(footerView);
 
-		
-		//方案二: 滚动闲置时候就执行上拉加载
-//		this.setOnScrollListener(new OnScrollListener() {
-//
-//			@Override
-//			public void onScrollStateChanged(AbsListView view, int scrollState) {
-//				if (scrollState == OnScrollListener.SCROLL_STATE_IDLE && (view.getLastVisiblePosition() == view.getCount() - 1) && upStatus == PULL_TO_REFRESH) {
-//					Log.e("yao", "上拉加载:" + getCount());
-//					upStatus = REFRESHING;
-//					footerView.setPadding(0, 0, 0, 0);
-//					setSelection(getCount() - 1);
-//					footerView.postDelayed(new Runnable() {
-//
-//						@Override
-//						public void run() {
-//							upStatus = PULL_TO_REFRESH;
-//							footerView.setPadding(0, 0, 0, -footerViewHeight);
-//						}
-//					}, 1000);
-//				}
-//			}
-//
-//			@Override
-//			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//			}
-//		});
+		// 方案二: 滚动闲置时候就执行上拉加载
+		// this.setOnScrollListener(new OnScrollListener() {
+		//
+		// @Override
+		// public void onScrollStateChanged(AbsListView view, int scrollState) {
+		// if (scrollState == OnScrollListener.SCROLL_STATE_IDLE && (view.getLastVisiblePosition() == view.getCount() - 1) && upStatus == PULL_TO_REFRESH) {
+		// Log.e("yao", "上拉加载:" + getCount());
+		// upStatus = REFRESHING;
+		// footerView.setPadding(0, 0, 0, 0);
+		// setSelection(getCount() - 1);
+		// footerView.postDelayed(new Runnable() {
+		//
+		// @Override
+		// public void run() {
+		// upStatus = PULL_TO_REFRESH;
+		// footerView.setPadding(0, 0, 0, -footerViewHeight);
+		// }
+		// }, 1000);
+		// }
+		// }
+		//
+		// @Override
+		// public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+		// }
+		// });
 	}
 
 	private View initHeaderView(Context context) {
@@ -135,13 +135,12 @@ public class PowerfulPullToRefreshListView extends ListView {
 		view.setPadding(0, 0, 0, -footerViewHeight);
 		return view;
 	}
-	
+
 	@Override
 	public void setAdapter(ListAdapter adapter) {
 		this.adapter = adapter;
 		super.setAdapter(adapter);
 	}
-	
 
 	// 用于记录按下位置 和 headView未显示出来时候的最后位置(可用来计算offsetY)
 	private int downY = 0;;
@@ -160,7 +159,8 @@ public class PowerfulPullToRefreshListView extends ListView {
 				// 只有offsetY为正数,就拦截事件,不执行listView的滚动了, 只执行headerView.setPadding来模拟滚动
 				if (offsetY > 0) {
 					// 让headerView随手指慢慢滑出
-					headerView.setPadding(0, (-headerViewHeight + offsetY), 0, 0);
+					paddingTop = -headerViewHeight + offsetY;
+					headerView.setPadding(0, paddingTop, 0, 0);
 
 					// 如果headerView整个都滑出 且 处于下拉刷新状态
 					// 更改成松开刷新状态
@@ -191,29 +191,15 @@ public class PowerfulPullToRefreshListView extends ListView {
 				pullDownRefreshing();
 				// 否则重新隐藏头布局
 			} else {
-				headerView.setPadding(0, -headerViewHeight, 0, 0);
+				// headerView.setPadding(0, -headerViewHeight, 0, 0);
+				// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
+				startMyValueAnimator(headerView, true, paddingTop, -headerViewHeight);
 			}
 
-			//方案一: 松开手时候判断条件,为真执行上拉加载
+			// 方案一: 松开手时候判断条件,为真执行上拉加载
 			if (getLastVisiblePosition() == getCount() - 1 && upStatus == PULL_TO_REFRESH) {
-				Log.e("yao", "上拉加载:" + getCount());
-				upStatus = REFRESHING;
-				footerView.setPadding(0, 0, 0, 0);
-				setSelection(getCount() - 1);
-				if (onRefreshListener == null) {
-					postDelayed(new Runnable() {
-
-						@Override
-						public void run() {
-							onComplete(false);
-						}
-					}, 1000);
-				} else {
-					onRefreshListener.onPullUpToRefresh();
-				}
-				
+				pullUpRefreshing();
 			}
-
 			break;
 		}
 		return super.onTouchEvent(ev);
@@ -221,11 +207,11 @@ public class PowerfulPullToRefreshListView extends ListView {
 
 	private void pullDownRefreshing() {
 		downStatus = REFRESHING;
-		headerView.setPadding(0, 0, 0, 0);
 		// 先清除动画,才能设置不可见
 		ivArrow.clearAnimation();
 		ivArrow.setVisibility(View.GONE);
 		pbRotate.setVisibility(View.VISIBLE);
+		tvStatus.setText("刷新中");
 		if (onRefreshListener == null) {
 			postDelayed(new Runnable() {
 				@Override
@@ -236,10 +222,32 @@ public class PowerfulPullToRefreshListView extends ListView {
 		} else {
 			onRefreshListener.onPullDownToRefresh();
 		}
+		// headerView.setPadding(0, 0, 0, 0);
+		// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
+		startMyValueAnimator(headerView, true, paddingTop, 0);
 	}
-	
+
+	private void pullUpRefreshing() {
+		Log.e("yao", "上拉加载:" + getCount());
+		upStatus = REFRESHING;
+		if (onRefreshListener == null) {
+			postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					onComplete(false);
+				}
+			}, 1000);
+		} else {
+			onRefreshListener.onPullUpToRefresh();
+		}
+		// footerView.setPadding(0, 0, 0, 0);
+		// setSelection(getCount() - 1);
+		// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
+		startMyValueAnimator(footerView, false, -footerViewHeight, 0);
+	}
+
 	public void onComplete(boolean isPullDown) {
-		if (isPullDown) {  //是下拉刷新
+		if (isPullDown) { // 是下拉刷新
 			downStatus = PULL_TO_REFRESH;
 			tvStatus.setText("下拉刷新");
 			ivArrow.clearAnimation();
@@ -248,15 +256,36 @@ public class PowerfulPullToRefreshListView extends ListView {
 			headerView.setPadding(0, -headerViewHeight, 0, 0);
 			tvTime.setText(sdf.format(new Date()));
 			if (adapter instanceof BaseAdapter) {
-				((BaseAdapter)adapter).notifyDataSetChanged();
+				((BaseAdapter) adapter).notifyDataSetChanged();
 			}
-		} else {  //是上拉加载
+		} else { // 是上拉加载
 			upStatus = PULL_TO_REFRESH;
-			footerView.setPadding(0, 0, 0, -footerViewHeight);
+			// footerView.setPadding(0, 0, 0, -footerViewHeight);
+			// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
+			startMyValueAnimator(footerView, false, 0, -footerViewHeight);
 			if (adapter instanceof BaseAdapter) {
-				((BaseAdapter)adapter).notifyDataSetChanged();
+				((BaseAdapter) adapter).notifyDataSetChanged();
 			}
 		}
+	}
+
+	private void startMyValueAnimator(final View view, final boolean isPaddingTop, int value1, int value2) {
+		ValueAnimator animator = ValueAnimator.ofInt(value1, value2);
+		animator.addUpdateListener(new AnimatorUpdateListener() { // 监听值的变化
+
+			@Override
+			public void onAnimationUpdate(ValueAnimator animator) {
+				int value = (Integer) animator.getAnimatedValue();// 运行当前时间点的一个值
+				if (isPaddingTop) {
+					view.setPadding(0, value, 0, 0);
+				} else {
+					view.setPadding(0, 0, 0, value);
+					setSelection(getCount() - 1);
+				}
+			}
+		});
+		animator.setDuration(100);
+		animator.start();
 	}
 
 	private OnRefreshListener onRefreshListener;
