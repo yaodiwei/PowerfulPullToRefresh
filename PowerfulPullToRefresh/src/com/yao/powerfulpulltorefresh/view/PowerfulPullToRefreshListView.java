@@ -36,7 +36,7 @@ public class PowerfulPullToRefreshListView extends ListView {
 
 	private int downStatus = PULL_TO_REFRESH;
 	private int upStatus = PULL_TO_REFRESH;
-
+	
 	private ImageView ivArrow;
 	private ProgressBar pbRotate;
 	private TextView tvStatus;
@@ -61,6 +61,13 @@ public class PowerfulPullToRefreshListView extends ListView {
 		pull.setFillAfter(true);
 		release.setDuration(200);
 		release.setFillAfter(true);
+	}
+	
+	// 根据设置自由选择平滑移动还是瞬间移动
+	private boolean isSmoothMovement = true;
+	
+	public void setSmoothMovement (boolean isSmoothMovement) {
+		this.isSmoothMovement = isSmoothMovement;
 	}
 
 	public PowerfulPullToRefreshListView(Context context, AttributeSet attrs, int defStyle) {
@@ -145,19 +152,22 @@ public class PowerfulPullToRefreshListView extends ListView {
 	}
 
 	// 用于记录按下位置 和 headView未显示出来时候的最后位置(可用来计算offsetY)
-	private int downY = 0;;
+	private int startY = 0;
+	// 用于记录按下位置
+	private int downY = 0;
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		switch (ev.getAction()) {
 		case MotionEvent.ACTION_DOWN:
+			startY = (int) ev.getY();
 			downY = (int) ev.getY();
 			break;
 		case MotionEvent.ACTION_MOVE:
 			// 如果头布局可见 且 属于下拉或松开刷新状态,则进入判断下拉刷新的逻辑
 			if (getFirstVisiblePosition() == 0 && (downStatus == PULL_TO_REFRESH || downStatus == RELEASE_TO_REFRESH)) {
 				// 根据当前手指位置 - headView未显示出来时候的最后位置 , 得到Y的偏移
-				int offsetY = (int) ev.getY() - downY;
+				int offsetY = (int) ev.getY() - startY;
 				// 只有offsetY为正数,就拦截事件,不执行listView的滚动了, 只执行headerView.setPadding来模拟滚动
 				if (offsetY > 0) {
 					// 让headerView随手指慢慢滑出
@@ -184,7 +194,7 @@ public class PowerfulPullToRefreshListView extends ListView {
 				}
 				// 如果头布局不可见,则更新downY的位置
 			} else {
-				downY = (int) ev.getY();
+				startY = (int) ev.getY();
 			}
 			break;
 		case MotionEvent.ACTION_UP:
@@ -193,13 +203,17 @@ public class PowerfulPullToRefreshListView extends ListView {
 				pullDownRefreshing();
 				// 否则重新隐藏头布局
 			} else {
-				// headerView.setPadding(0, -headerViewHeight, 0, 0);
-				// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
-				startMyValueAnimator(headerView, true, paddingTop, -headerViewHeight);
+				if (isSmoothMovement && paddingTop!=-headerViewHeight) {
+					startMyValueAnimator(headerView, true, paddingTop, -headerViewHeight);
+					paddingTop = -headerViewHeight;//不赋这个值,下拉一次后,每次点击列表都会进入动画
+				} else {
+					headerView.setPadding(0, -headerViewHeight, 0, 0);
+				}
 			}
 
 			// 方案一: 松开手时候判断条件,为真执行上拉加载
-			if (getLastVisiblePosition() == getCount() - 1 && upStatus == PULL_TO_REFRESH) {
+			int offsetY = (int) ev.getY() - downY;
+			if (getLastVisiblePosition() == getCount() - 1 && upStatus == PULL_TO_REFRESH && offsetY < 0) {
 				pullUpRefreshing();
 			}
 			break;
@@ -224,9 +238,12 @@ public class PowerfulPullToRefreshListView extends ListView {
 		} else {
 			onRefreshListener.onPullDownToRefresh();
 		}
-		// headerView.setPadding(0, 0, 0, 0);
-		// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
-		startMyValueAnimator(headerView, true, paddingTop, 0);
+		if (isSmoothMovement) {
+			startMyValueAnimator(headerView, true, paddingTop, 0);
+			paddingTop = -headerViewHeight;//不赋这个值,下拉一次后,每次点击列表都会进入动画
+		} else {
+			headerView.setPadding(0, 0, 0, 0);
+		}
 	}
 
 	private void pullUpRefreshing() {
@@ -242,10 +259,12 @@ public class PowerfulPullToRefreshListView extends ListView {
 		} else {
 			onRefreshListener.onPullUpToRefresh();
 		}
-		// footerView.setPadding(0, 0, 0, 0);
-		// setSelection(getCount() - 1);
-		// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
-		startMyValueAnimator(footerView, false, -footerViewHeight, 0);
+		if (isSmoothMovement && footerViewHeight!=0) {
+			startMyValueAnimator(footerView, false, footerViewHeight, 0);
+		} else {
+			footerView.setPadding(0, 0, 0, 0);
+			setSelection(getCount() - 1);
+		}
 	}
 
 	public void onComplete(boolean isPullDown) {
@@ -262,9 +281,11 @@ public class PowerfulPullToRefreshListView extends ListView {
 			}
 		} else { // 是上拉加载
 			upStatus = PULL_TO_REFRESH;
-			// footerView.setPadding(0, 0, 0, -footerViewHeight);
-			// 把原来的无动画瞬间进到刷新中状态改成有过渡动画的
-			startMyValueAnimator(footerView, false, 0, -footerViewHeight);
+			if (isSmoothMovement && 0!=footerViewHeight) {
+				startMyValueAnimator(footerView, false, 0, -footerViewHeight);
+			} else {
+				footerView.setPadding(0, 0, 0, -footerViewHeight);
+			}
 			if (adapter instanceof BaseAdapter) {
 				((BaseAdapter) adapter).notifyDataSetChanged();
 			}
