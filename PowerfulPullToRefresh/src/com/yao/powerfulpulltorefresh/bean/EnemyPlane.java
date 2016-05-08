@@ -1,13 +1,13 @@
 package com.yao.powerfulpulltorefresh.bean;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.util.Log;
 
 import com.yao.powerfulpulltorefresh.R;
 import com.yao.powerfulpulltorefresh.util.UiUtils;
@@ -19,36 +19,66 @@ import com.yao.powerfulpulltorefresh.util.UiUtils;
  */
 public class EnemyPlane extends GameObject {
 
-	public EnemyPlane(int x, int y) {
-		super();
-		resId = R.drawable.enemy_plane;
-		bitmap = BitmapFactory.decodeResource(UiUtils.getResources(), resId);
+	public static Bitmap bitmap1;
+	public static Bitmap bitmap2;
+	public static Bitmap bitmap3;
+	public static int width;
+	public static int height;
+
+	public Status status = Status.A;
+
+	static {
 		Matrix matrix = new Matrix();
 		matrix.postScale(3f, 3f); //长和宽放大缩小的比例 
-		bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-		width = bitmap.getWidth();//34
-		height = bitmap.getHeight();//84
+		bitmap1 = BitmapFactory.decodeResource(UiUtils.getResources(), R.drawable.enemy_plane_1);
+		bitmap2 = BitmapFactory.decodeResource(UiUtils.getResources(), R.drawable.enemy_plane_2);
+		bitmap3 = BitmapFactory.decodeResource(UiUtils.getResources(), R.drawable.enemy_plane_3);
+		bitmap1 = Bitmap.createBitmap(bitmap1, 0, 0, bitmap1.getWidth(), bitmap1.getHeight(), matrix, true);
+		bitmap2 = Bitmap.createBitmap(bitmap2, 0, 0, bitmap2.getWidth(), bitmap2.getHeight(), matrix, true);
+		bitmap3 = Bitmap.createBitmap(bitmap3, 0, 0, bitmap3.getWidth(), bitmap3.getHeight(), matrix, true);
+		width = bitmap1.getWidth();//34*3
+		height = bitmap1.getHeight();//38*3
+	}
+
+	public EnemyPlane(int x, int y) {
+		super();
 		this.x = x;
 		this.y = y;
 		speedY = 5;
 	}
 
-	public void draw(Canvas canvas, Paint paint) {
-//		x += speedX;
-		y += speedY;
+	public void draw(Canvas canvas, Paint paint, ArrayList<Bullet> bullets) {
 		canvas.save();
-		canvas.clipRect(x, y, x + width, y + height / 3);
-		canvas.drawBitmap(bitmap, x, y, paint);
+		if (status == Status.A) {
+			if (isHit(bullets)) {
+				status = Status.B;
+				canvas.drawBitmap(bitmap2, x, y, paint);
+			} else {
+				y += speedY;
+				canvas.drawBitmap(bitmap1, x, y, paint);
+			}
+		} else if (status == Status.B) {
+			status = Status.C;
+			canvas.drawBitmap(bitmap3, x, y, paint);
+		}
 		canvas.restore();
 	}
-	
+
 	public boolean isHit(ArrayList<Bullet> bullets) {
-		for (Bullet bullet : bullets) {
-			if (bullet.x + bullet.width > x && bullet.x < x + width && y+height/3 > bullet.y) {
-				return true;
+		Iterator<Bullet> itBullet = bullets.iterator();
+		while (itBullet.hasNext()) {
+			Bullet bullet = itBullet.next();
+			if (bullet.x + Bullet.width > x && bullet.x < x + width && y + height > bullet.y) {
+				if (status == Status.A) {
+					itBullet.remove();
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 
+	public static enum Status {
+		A, B, C;
+	}
 }

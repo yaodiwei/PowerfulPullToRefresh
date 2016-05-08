@@ -14,30 +14,33 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.yao.powerfulpulltorefresh.R;
 import com.yao.powerfulpulltorefresh.bean.Bullet;
 import com.yao.powerfulpulltorefresh.bean.EnemyPlane;
+import com.yao.powerfulpulltorefresh.bean.MyPlane;
 import com.yao.powerfulpulltorefresh.util.UiUtils;
 
 public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
-	private Canvas canvas;
 	private SurfaceHolder holder;
-	private boolean isDrawing;
 	private Timer timer;
 	private TimerTask task;
-	private ArrayList<EnemyPlane> planes = new ArrayList<EnemyPlane>();
+	private ArrayList<EnemyPlane> enemyPlanes = new ArrayList<EnemyPlane>();
 	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 	private Random random = new Random();
 
 	private int enemyPlaneMaxRightPosition;//敌方飞机最靠右的极限位置
 	private int enemyPlaneHeight;
+	private MyPlane myPlane;
 
 	private int width;
 	private int height;
+	
+	private boolean isFingerOnMyPlane;
 
 	public PlaneView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
@@ -73,19 +76,18 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Ru
 	public void surfaceCreated(final SurfaceHolder holder) {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeResource(UiUtils.getResources(), R.drawable.enemy_plane, options);
+		BitmapFactory.decodeResource(UiUtils.getResources(), R.drawable.enemy_plane_1, options);
 		enemyPlaneMaxRightPosition = getWidth() - options.outWidth * (int) (getResources().getDisplayMetrics().density);
 		enemyPlaneHeight = options.outHeight * (int) (getResources().getDisplayMetrics().density);
-		Log.e("yao", "enemyPlaneHeight:" + enemyPlaneHeight);
 		width = getWidth();
 		height = getHeight();
-		Log.e("yao", "getHeight():" + getHeight());
+		myPlane = new MyPlane(width, height);
 
-		isDrawing = true;
 		timer = new Timer();
 		task = new TimerTask() {
 			@Override
 			public void run() {
+
 				continueInitEnemyPlane();
 
 				continueInitBullet();
@@ -93,30 +95,34 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Ru
 				Paint paint = new Paint();
 				Canvas canvas = holder.lockCanvas();
 				canvas.drawColor(Color.WHITE);
-				Iterator<EnemyPlane> itPlane = planes.iterator();
+
+				//画敌机
+				Iterator<EnemyPlane> itPlane = enemyPlanes.iterator();
 				while (itPlane.hasNext()) {
 					EnemyPlane ep = itPlane.next();
-					if (ep.y > height) {
-						itPlane.remove();
-					} else if (ep.isHit(bullets)){
+					if (ep.y > height || ep.status == EnemyPlane.Status.C) {
 						itPlane.remove();
 					} else {
-						ep.draw(canvas, paint);
-						
+						ep.draw(canvas, paint, bullets);
 					}
 				}
 
+				//画子弹
 				Iterator<Bullet> itBullet = bullets.iterator();
 				while (itBullet.hasNext()) {
 					Bullet bullet = itBullet.next();
-					if (bullet.y + bullet.height < 0) {
+					if (bullet.y + Bullet.height < 0) {
 						itBullet.remove();
 					} else {
 						bullet.draw(canvas, paint);
 					}
 				}
 
+				//画我机
+				myPlane.draw(canvas, paint, enemyPlanes);
+
 				holder.unlockCanvasAndPost(canvas);
+
 			}
 
 		};
@@ -134,24 +140,58 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Ru
 		timer.cancel();
 	}
 
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		int x = (int) event.getX();
+		int y = (int) event.getY();
+		if (event.getAction() == MotionEvent.ACTION_MOVE) {
+			if (isFingerOnMyPlane) {
+				myPlane.setTarget(x, y);
+			}
+		} else if (event.getAction() == MotionEvent.ACTION_DOWN) {
+			if (isTouchOnPlane(x, y)) {
+				isFingerOnMyPlane = true;
+			}
+		} else if (event.getAction() == MotionEvent.ACTION_UP) {
+			if (isFingerOnMyPlane == true) {
+				isFingerOnMyPlane = false;
+			}
+		}
+		if (y - MyPlane.height / 2 < 0) {
+			y = y - MyPlane.height;
+		}
+		if (y - MyPlane.height / 2 > height) {
+			y = height - MyPlane.height / 2;
+		}
+		myPlane.x = x - MyPlane.width / 2;
+		myPlane.y = y - MyPlane.height / 2;
+		return true;
+	}
+
+	private boolean isTouchOnPlane(int x, int y) {
+		if (x>myPlane.x && x<myPlane.x+MyPlane.width && y>myPlane.y && y<myPlane.y+MyPlane.height) {
+			return true;
+		}
+		return false;
+	}
+
 	private void continueInitEnemyPlane() {
-		if (System.currentTimeMillis() % 5 == 0) {
+		if (System.currentTimeMillis() % 10 == 0) {
 			int x = random.nextInt(enemyPlaneMaxRightPosition);
 			EnemyPlane ep = new EnemyPlane(x, -enemyPlaneHeight);
-			planes.add(ep);
-			//Log.i("yao", "planes.size():"+planes.size());
+			enemyPlanes.add(ep);
 		}
 	}
 
 	int bulletInterval = 0;
+
 	private void continueInitBullet() {
-		if (bulletInterval % 1000 == 0) {
-			Bullet bullet = new Bullet(width / 2, height);
+		if (bulletInterval % 20 == 0) {
+			Bullet bullet = new Bullet(myPlane.x + MyPlane.width / 2 - Bullet.width / 2, myPlane.y + MyPlane.height / 2 - Bullet.height / 2);
 			bullets.add(bullet);
-			Log.e("yao", "bullets.size():" + bullets.size());
 			bulletInterval = 1;
 		}
-		bulletInterval ++;
+		bulletInterval++;
 	}
 
 }
