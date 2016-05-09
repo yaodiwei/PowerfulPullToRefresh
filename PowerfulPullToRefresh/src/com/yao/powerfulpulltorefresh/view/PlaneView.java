@@ -39,7 +39,7 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Ru
 
 	private int width;
 	private int height;
-	
+
 	private boolean isFingerOnMyPlane;
 
 	public PlaneView(Context context, AttributeSet attrs, int defStyle) {
@@ -163,13 +163,13 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Ru
 		if (y - MyPlane.height / 2 > height) {
 			y = height - MyPlane.height / 2;
 		}
-		myPlane.x = x - MyPlane.width / 2;
-		myPlane.y = y - MyPlane.height / 2;
+		//		myPlane.x = x - MyPlane.width / 2;
+		//		myPlane.y = y - MyPlane.height / 2;
 		return true;
 	}
 
 	private boolean isTouchOnPlane(int x, int y) {
-		if (x>myPlane.x && x<myPlane.x+MyPlane.width && y>myPlane.y && y<myPlane.y+MyPlane.height) {
+		if (x > myPlane.x && x < myPlane.x + MyPlane.width && y > myPlane.y && y < myPlane.y + MyPlane.height) {
 			return true;
 		}
 		return false;
@@ -186,7 +186,7 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Ru
 	int bulletInterval = 0;
 
 	private void continueInitBullet() {
-		if (bulletInterval % 20 == 0) {
+		if (bulletInterval % 20 == 0 && (myPlane.status == MyPlane.Status.A || myPlane.status == MyPlane.Status.B)) {
 			Bullet bullet = new Bullet(myPlane.x + MyPlane.width / 2 - Bullet.width / 2, myPlane.y + MyPlane.height / 2 - Bullet.height / 2);
 			bullets.add(bullet);
 			bulletInterval = 1;

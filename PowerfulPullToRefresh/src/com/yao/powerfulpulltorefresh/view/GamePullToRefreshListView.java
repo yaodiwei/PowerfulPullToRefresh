@@ -3,9 +3,6 @@
  */
 package com.yao.powerfulpulltorefresh.view;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
@@ -13,23 +10,22 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.yao.powerfulpulltorefresh.R;
 
 /**
  * @author YaoDiWei
  * @version
- * @see com.yao.powerfulpulltorefresh.view.PowerfulPullToRefreshListView.java
+ * @see com.yao.powerfulpulltorefresh.view.SimplePullToRefreshListView.java
  */
-public class PowerfulPullToRefreshListView extends ListView {
+public class GamePullToRefreshListView extends ListView {
 	private static final int PULL_TO_REFRESH = 0;
 	private static final int RELEASE_TO_REFRESH = 1;
 	private static final int REFRESHING = 2;
@@ -37,12 +33,6 @@ public class PowerfulPullToRefreshListView extends ListView {
 	private int downStatus = PULL_TO_REFRESH;
 	private int upStatus = PULL_TO_REFRESH;
 	
-	private ImageView ivArrow;
-	private ProgressBar pbRotate;
-	private TextView tvStatus;
-	private TextView tvTime;
-	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
 	private ListAdapter adapter;
 
 	private View headerView;
@@ -70,17 +60,17 @@ public class PowerfulPullToRefreshListView extends ListView {
 		this.isSmoothMovement = isSmoothMovement;
 	}
 
-	public PowerfulPullToRefreshListView(Context context, AttributeSet attrs, int defStyle) {
+	public GamePullToRefreshListView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		initView(context);
 	}
 
-	public PowerfulPullToRefreshListView(Context context, AttributeSet attrs) {
+	public GamePullToRefreshListView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		initView(context);
 	}
 
-	public PowerfulPullToRefreshListView(Context context) {
+	public GamePullToRefreshListView(Context context) {
 		super(context);
 		initView(context);
 	}
@@ -92,7 +82,6 @@ public class PowerfulPullToRefreshListView extends ListView {
 		addFooterView(footerView);
 
 		// 方案二: 滚动闲置时候就执行上拉加载
-
 		/*this.setOnScrollListener(new OnScrollListener() {
 
 			@Override
@@ -121,12 +110,10 @@ public class PowerfulPullToRefreshListView extends ListView {
 	}
 
 	private View initHeaderView(Context context) {
-		View view = View.inflate(context, R.layout.view_header, null);
-		ivArrow = (ImageView) view.findViewById(R.id.ivArrow);
-		pbRotate = (ProgressBar) view.findViewById(R.id.pbRotate);
-		tvStatus = (TextView) view.findViewById(R.id.tvStatus);
-		tvTime = (TextView) view.findViewById(R.id.tvTime);
-		tvTime.setText(sdf.format(new Date()));
+		AbsListView.LayoutParams lp = new AbsListView.LayoutParams( 
+                LayoutParams.MATCH_PARENT, 1500); 
+		PlaneView view = new PlaneView(context);
+		view.setLayoutParams(lp);
 
 		view.measure(0, 0);
 		headerViewHeight = view.getMeasuredHeight();
@@ -135,7 +122,7 @@ public class PowerfulPullToRefreshListView extends ListView {
 
 		return view;
 	}
-
+	
 	private View initFooterView(Context context) {
 		View view = View.inflate(context, R.layout.view_footer, null);
 		view.measure(0, 0);
@@ -178,17 +165,11 @@ public class PowerfulPullToRefreshListView extends ListView {
 					// 更改成松开刷新状态
 					if (-headerViewHeight + offsetY > 0 && downStatus == PULL_TO_REFRESH) {
 						downStatus = RELEASE_TO_REFRESH;
-						tvStatus.setText("松开刷新");
-						ivArrow.clearAnimation();
-						ivArrow.startAnimation(pull);
 					}
 					// 如果headerView没有整个都滑出 且 处于松开刷新状态
 					// 更改成下拉刷新状态
 					if (-headerViewHeight + offsetY < 0 && downStatus == RELEASE_TO_REFRESH) {
 						downStatus = PULL_TO_REFRESH;
-						tvStatus.setText("下拉刷新");
-						ivArrow.clearAnimation();
-						ivArrow.startAnimation(release);
 					}
 					return true;// 拦截事件
 				}
@@ -223,11 +204,6 @@ public class PowerfulPullToRefreshListView extends ListView {
 
 	private void pullDownRefreshing() {
 		downStatus = REFRESHING;
-		// 先清除动画,才能设置不可见
-		ivArrow.clearAnimation();
-		ivArrow.setVisibility(View.GONE);
-		pbRotate.setVisibility(View.VISIBLE);
-		tvStatus.setText("刷新中");
 		if (onRefreshListener == null) {
 			postDelayed(new Runnable() {
 				@Override
@@ -270,11 +246,6 @@ public class PowerfulPullToRefreshListView extends ListView {
 	public void onComplete(boolean isPullDown) {
 		if (isPullDown) { // 是下拉刷新
 			downStatus = PULL_TO_REFRESH;
-			tvStatus.setText("下拉刷新");
-			ivArrow.clearAnimation();
-			ivArrow.setVisibility(View.VISIBLE);
-			pbRotate.setVisibility(View.GONE);
-			tvTime.setText(sdf.format(new Date()));
 			if (adapter instanceof BaseAdapter) {
 				((BaseAdapter) adapter).notifyDataSetChanged();
 			}

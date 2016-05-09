@@ -4,14 +4,13 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 
-import com.yao.powerfulpulltorefresh.view.PowerfulPullToRefreshListView;
-import com.yao.powerfulpulltorefresh.view.PowerfulPullToRefreshListView.OnRefreshListener;
+import com.yao.powerfulpulltorefresh.view.GamePullToRefreshListView;
+import com.yao.powerfulpulltorefresh.view.GamePullToRefreshListView.OnRefreshListener;
 
 public class MainActivity extends Activity {
 
-	private PowerfulPullToRefreshListView lv;
+	private GamePullToRefreshListView lv;
 	private ArrayList<String> list;
 	private ExampleAdapter adapter;
 	private int i = 0;
@@ -22,7 +21,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		lv = (PowerfulPullToRefreshListView) findViewById(R.id.lv);
+		lv = (GamePullToRefreshListView) findViewById(R.id.lv);
 		list = getDatas();
 		adapter = new ExampleAdapter(this);
 		adapter.setDatas(list);

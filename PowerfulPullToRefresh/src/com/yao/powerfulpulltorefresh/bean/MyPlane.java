@@ -1,6 +1,7 @@
 package com.yao.powerfulpulltorefresh.bean;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 
 import com.yao.powerfulpulltorefresh.R;
+import com.yao.powerfulpulltorefresh.bean.EnemyPlane.Status;
 import com.yao.powerfulpulltorefresh.util.UiUtils;
 
 public class MyPlane extends GameObject {
@@ -34,7 +36,7 @@ public class MyPlane extends GameObject {
 		bitmap1 = Bitmap.createBitmap(bitmap1, 0, 0, bitmap1.getWidth(), bitmap1.getHeight(), matrix, true);
 		bitmap2 = Bitmap.createBitmap(bitmap2, 0, 0, bitmap2.getWidth(), bitmap2.getHeight(), matrix, true);
 		bitmap3 = Bitmap.createBitmap(bitmap3, 0, 0, bitmap3.getWidth(), bitmap3.getHeight(), matrix, true);
-		bitmap4 = Bitmap.createBitmap(bitmap3, 0, 0, bitmap4.getWidth(), bitmap3.getHeight(), matrix, true);
+		bitmap4 = Bitmap.createBitmap(bitmap4, 0, 0, bitmap4.getWidth(), bitmap4.getHeight(), matrix, true);
 		width = bitmap1.getWidth();
 		height = bitmap1.getHeight();//84
 	}
@@ -43,28 +45,73 @@ public class MyPlane extends GameObject {
 		super();
 		this.x = width/2 - MyPlane.width / 2;
 		this.y = height - MyPlane.height;
+		targetX = x;
+		targetY = y;
+		speedX = 5;
 		speedY = 5;
 	}
 
+	private int exploreTimes;
 	public void draw(Canvas canvas, Paint paint, ArrayList<EnemyPlane> eps) {
 		canvas.save();
-		if (status == Status.A) {
-			canvas.drawBitmap(bitmap1, x, y, paint);
-			status = Status.B;
-		} else {
-			canvas.drawBitmap(bitmap2, x, y, paint);
-			status = Status.A;
+		if (status==Status.A || status==Status.B){
+			if (isHit(eps)) {
+				status = Status.C;
+				canvas.drawBitmap(bitmap3, x, y, paint);
+			} else {
+				if (targetX > x) {
+					x = Math.min((x+speedX), targetX);
+				} else if (targetX < x) {
+					x = Math.max((x-speedX), targetX);
+				}
+				if (targetY > y) {
+					y = Math.min((y+speedY), targetY);
+				} else if (targetY < y) {
+					y = Math.max((y-speedY), targetY);
+				}
+				if (status == Status.A) {
+					canvas.drawBitmap(bitmap1, x, y, paint);
+					status = Status.B;
+				} else {
+					canvas.drawBitmap(bitmap2, x, y, paint);
+					status = Status.A;
+				}
+			}
+		} else if (status == Status.C){
+			exploreTimes++;
+			if (exploreTimes > 20) {
+				exploreTimes = 0;
+				status = Status.D;
+				canvas.drawBitmap(bitmap4, x, y, paint);
+			} else {
+				canvas.drawBitmap(bitmap3, x, y, paint);
+			}
+		} else if (status == Status.D) {
+			exploreTimes++;
+			if (exploreTimes < 20) {
+				canvas.drawBitmap(bitmap4, x, y, paint);
+			} else {
+				
+			}
 		}
 		canvas.restore();
 	}
 	
 	public void setTarget(int x, int y) {
-		
+		targetX = x - width/2;
+		targetY = y - height;
 	}
 	
 	
-	public void isHit(ArrayList<Bullet> enemyPlane){
-		
+	public boolean isHit(ArrayList<EnemyPlane> enemyPlane){
+		Iterator<EnemyPlane> it = enemyPlane.iterator();
+		while (it.hasNext()) {
+			EnemyPlane ep = it.next();
+			if (ep.x+EnemyPlane.width > x && ep.x < x+width && ep.y+EnemyPlane.height > y && ep.y<y+height){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public static enum Status {

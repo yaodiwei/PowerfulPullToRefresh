@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context="com.yao.powerfulpulltorefresh.MainActivity" >
 
-    <com.yao.powerfulpulltorefresh.view.PowerfulPullToRefreshListView
+    <com.yao.powerfulpulltorefresh.view.GamePullToRefreshListView
         android:id="@+id/lv"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
