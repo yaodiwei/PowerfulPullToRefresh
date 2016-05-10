@@ -10,7 +10,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
@@ -40,6 +39,8 @@ public class GamePullToRefreshListView extends ListView {
 
 	private View footerView;
 	private int footerViewHeight;
+	
+	private int height;
 
 	private int paddingTop = 0;
 
@@ -73,6 +74,13 @@ public class GamePullToRefreshListView extends ListView {
 	public GamePullToRefreshListView(Context context) {
 		super(context);
 		initView(context);
+	}
+	
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		height = MeasureSpec.getSize(heightMeasureSpec);
+		Log.e("yao", "onMeasure height"+height);
 	}
 
 	private void initView(Context context) {
@@ -111,14 +119,15 @@ public class GamePullToRefreshListView extends ListView {
 
 	private View initHeaderView(Context context) {
 		AbsListView.LayoutParams lp = new AbsListView.LayoutParams( 
-                LayoutParams.MATCH_PARENT, 1500); 
+                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT); 
 		PlaneView view = new PlaneView(context);
 		view.setLayoutParams(lp);
 
 		view.measure(0, 0);
 		headerViewHeight = view.getMeasuredHeight();
 		Log.e("yao", "headerViewHeight:" + headerViewHeight);
-		view.setPadding(0, -headerViewHeight, 0, 0);
+		
+		view.setPadding(0, -height, 0, 0);
 
 		return view;
 	}
