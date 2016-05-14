@@ -2,8 +2,6 @@ package com.yao.powerfulpulltorefresh;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.LinearLayout;
 
 public class PlaneActivity extends Activity {
 

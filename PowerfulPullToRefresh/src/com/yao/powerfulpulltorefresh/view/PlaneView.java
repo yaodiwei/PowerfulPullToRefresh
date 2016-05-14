@@ -135,6 +135,12 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		timer.cancel();
 	}
+	
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent event) {
+		getParent().requestDisallowInterceptTouchEvent(true);// 用getParent去请求不拦截
+		return super.dispatchTouchEvent(event);
+	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {

@@ -49,18 +49,19 @@ public class GamePullToRefreshListView extends ListView {
 	private ListAdapter adapter;
 
 	private View headerView;
-	private int headerViewHeight;
+	private int headerViewHeight;//整个headerView的高度  即为控件的高度
+	private int notifyHeaderViewHeight;//通知部分的高度
+	private int gameHeaderViewHeight;//飞机游戏部分的高度
 
 	private View footerView;
 	private int footerViewHeight;
 	
-	private View gameHeaderView;
-	private int gameHeaderViewHeight;
-
 	private int paddingTop = 0;
 	
 	private int height;
 
+	
+	
 	private RotateAnimation pull = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 	private RotateAnimation release = new RotateAnimation(180, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
@@ -77,6 +78,13 @@ public class GamePullToRefreshListView extends ListView {
 	public void setSmoothMovement (boolean isSmoothMovement) {
 		this.isSmoothMovement = isSmoothMovement;
 	}
+	
+	//加载完成依然保持游戏界面
+	private boolean isCompleteStillPlayingGame = true;
+	
+	
+	
+	
 
 	public GamePullToRefreshListView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
@@ -103,8 +111,6 @@ public class GamePullToRefreshListView extends ListView {
 			public void onGlobalLayout() {
 				GamePullToRefreshListView.this.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 				height = getHeight();
-				gameHeaderView = initGameHeaderView(getContext());
-				addHeaderView(gameHeaderView);
 				headerView = initHeaderView(getContext());
 				addHeaderView(headerView);
 			}
@@ -139,33 +145,28 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private View initHeaderView(Context context) {
-		View view = View.inflate(context, R.layout.view_header, null);
-		ivArrow = (ImageView) view.findViewById(R.id.ivArrow);
-		pbRotate = (ProgressBar) view.findViewById(R.id.pbRotate);
-		tvStatus = (TextView) view.findViewById(R.id.tvStatus);
-		tvTime = (TextView) view.findViewById(R.id.tvTime);
+		LinearLayout linearLayout = (LinearLayout) View.inflate(context, R.layout.view_header_plane, null);
+		ivArrow = (ImageView) linearLayout.findViewById(R.id.ivArrow);
+		pbRotate = (ProgressBar) linearLayout.findViewById(R.id.pbRotate);
+		tvStatus = (TextView) linearLayout.findViewById(R.id.tvStatus);
+		tvTime = (TextView) linearLayout.findViewById(R.id.tvTime);
 		tvTime.setText(sdf.format(new Date()));
 		
-		view.measure(0, 0);
-		headerViewHeight = view.getMeasuredHeight();
-		Log.e("yao", "headerViewHeight:" + headerViewHeight);
-//		view.setPadding(0, -headerViewHeight, 0, 0);
+		linearLayout.measure(0, 0);
+		notifyHeaderViewHeight = linearLayout.getMeasuredHeight();
+		headerViewHeight = height;
+		gameHeaderViewHeight = height - notifyHeaderViewHeight;
 		
-		return view;
-	}
-	
-	private View initGameHeaderView(Context context) {
 //		View view = View.inflate(context, R.layout.view_header_plane, null);//用xml的话不知道屏幕高度height多少,用match_parent的话,surfaceView不会显示出来
-		LinearLayout view = new LinearLayout(context);
-		AbsListView.LayoutParams lp = new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		view.setLayoutParams(lp);
 		PlaneView planeView = new PlaneView(context);
-		LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height);
+		LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height - notifyHeaderViewHeight);
 		planeView.setLayoutParams(lp2);
-		view.addView(planeView);
-		Log.e("yao", "GameListView height " + height);
-//		view.setPadding(0, -height, 0, 0);//如果用FrameLayout,则setPadding失败
-		return view;
+		linearLayout.addView(planeView, 0);
+//		view.setPadding(0, -height, 0, 0);
+		
+		linearLayout.setPadding(0, -height, 0, 0);
+		
+		return linearLayout;
 	}
 	
 	private View initFooterView(Context context) {
@@ -208,7 +209,7 @@ public class GamePullToRefreshListView extends ListView {
 
 					// 如果headerView整个都滑出 且 处于下拉刷新状态
 					// 更改成松开刷新状态
-					if (-headerViewHeight + offsetY > 0 && downStatus == PULL_TO_REFRESH) {
+					if (-notifyHeaderViewHeight + offsetY > 0 && downStatus == PULL_TO_REFRESH) {
 						downStatus = RELEASE_TO_REFRESH;
 						tvStatus.setText("松开刷新");
 						ivArrow.clearAnimation();
@@ -216,7 +217,7 @@ public class GamePullToRefreshListView extends ListView {
 					}
 					// 如果headerView没有整个都滑出 且 处于松开刷新状态
 					// 更改成下拉刷新状态
-					if (-headerViewHeight + offsetY < 0 && downStatus == RELEASE_TO_REFRESH) {
+					if (-notifyHeaderViewHeight + offsetY < 0 && downStatus == RELEASE_TO_REFRESH) {
 						downStatus = PULL_TO_REFRESH;
 						tvStatus.setText("下拉刷新");
 						ivArrow.clearAnimation();
@@ -310,10 +311,14 @@ public class GamePullToRefreshListView extends ListView {
 			if (adapter instanceof BaseAdapter) {
 				((BaseAdapter) adapter).notifyDataSetChanged();
 			}
-			if (isSmoothMovement) {
-				startMyValueAnimator(headerView, true, 0, -headerViewHeight);
+			if (isCompleteStillPlayingGame) {
+				
 			} else {
-				headerView.setPadding(0, -headerViewHeight, 0, 0);
+				if (isSmoothMovement) {
+					startMyValueAnimator(headerView, true, 0, -headerViewHeight);
+				} else {
+					headerView.setPadding(0, -headerViewHeight, 0, 0);
+				}
 			}
 		} else { // 是上拉加载
 			upStatus = PULL_TO_REFRESH;
