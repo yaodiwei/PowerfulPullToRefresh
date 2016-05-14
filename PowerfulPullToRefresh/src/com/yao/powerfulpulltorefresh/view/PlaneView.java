@@ -24,7 +24,7 @@ import com.yao.powerfulpulltorefresh.bean.EnemyPlane;
 import com.yao.powerfulpulltorefresh.bean.MyPlane;
 import com.yao.powerfulpulltorefresh.util.UiUtils;
 
-public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 
 	private SurfaceHolder holder;
 	private Timer timer;
@@ -68,12 +68,8 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback, Ru
 	}
 
 	@Override
-	public void run() {
-
-	}
-
-	@Override
 	public void surfaceCreated(final SurfaceHolder holder) {
+		Log.e("yao", "surfaceCreated-----------------------");
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
 		BitmapFactory.decodeResource(UiUtils.getResources(), R.drawable.enemy_plane_1, options);

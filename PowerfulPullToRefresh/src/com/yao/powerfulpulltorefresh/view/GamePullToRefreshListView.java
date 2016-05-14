@@ -3,6 +3,9 @@
  */
 package com.yao.powerfulpulltorefresh.view;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
@@ -10,12 +13,17 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.yao.powerfulpulltorefresh.R;
 
@@ -32,6 +40,12 @@ public class GamePullToRefreshListView extends ListView {
 	private int downStatus = PULL_TO_REFRESH;
 	private int upStatus = PULL_TO_REFRESH;
 	
+	private ImageView ivArrow;
+	private ProgressBar pbRotate;
+	private TextView tvStatus;
+	private TextView tvTime;
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 	private ListAdapter adapter;
 
 	private View headerView;
@@ -40,9 +54,12 @@ public class GamePullToRefreshListView extends ListView {
 	private View footerView;
 	private int footerViewHeight;
 	
-	private int height;
+	private View gameHeaderView;
+	private int gameHeaderViewHeight;
 
 	private int paddingTop = 0;
+	
+	private int height;
 
 	private RotateAnimation pull = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 	private RotateAnimation release = new RotateAnimation(180, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -75,19 +92,23 @@ public class GamePullToRefreshListView extends ListView {
 		super(context);
 		initView(context);
 	}
-	
-	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		height = MeasureSpec.getSize(heightMeasureSpec);
-		Log.e("yao", "onMeasure height"+height);
-	}
 
 	private void initView(Context context) {
-		headerView = initHeaderView(context);
-		addHeaderView(headerView);
 		footerView = initFooterView(context);
 		addFooterView(footerView);
+		
+		this.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+			
+			@Override
+			public void onGlobalLayout() {
+				GamePullToRefreshListView.this.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+				height = getHeight();
+				gameHeaderView = initGameHeaderView(getContext());
+				addHeaderView(gameHeaderView);
+				headerView = initHeaderView(getContext());
+				addHeaderView(headerView);
+			}
+		});
 
 		// 方案二: 滚动闲置时候就执行上拉加载
 		/*this.setOnScrollListener(new OnScrollListener() {
@@ -118,17 +139,32 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private View initHeaderView(Context context) {
-		AbsListView.LayoutParams lp = new AbsListView.LayoutParams( 
-                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT); 
-		PlaneView view = new PlaneView(context);
-		view.setLayoutParams(lp);
-
+		View view = View.inflate(context, R.layout.view_header, null);
+		ivArrow = (ImageView) view.findViewById(R.id.ivArrow);
+		pbRotate = (ProgressBar) view.findViewById(R.id.pbRotate);
+		tvStatus = (TextView) view.findViewById(R.id.tvStatus);
+		tvTime = (TextView) view.findViewById(R.id.tvTime);
+		tvTime.setText(sdf.format(new Date()));
+		
 		view.measure(0, 0);
 		headerViewHeight = view.getMeasuredHeight();
 		Log.e("yao", "headerViewHeight:" + headerViewHeight);
+//		view.setPadding(0, -headerViewHeight, 0, 0);
 		
-		view.setPadding(0, -height, 0, 0);
-
+		return view;
+	}
+	
+	private View initGameHeaderView(Context context) {
+//		View view = View.inflate(context, R.layout.view_header_plane, null);//用xml的话不知道屏幕高度height多少,用match_parent的话,surfaceView不会显示出来
+		LinearLayout view = new LinearLayout(context);
+		AbsListView.LayoutParams lp = new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		view.setLayoutParams(lp);
+		PlaneView planeView = new PlaneView(context);
+		LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height);
+		planeView.setLayoutParams(lp2);
+		view.addView(planeView);
+		Log.e("yao", "GameListView height " + height);
+//		view.setPadding(0, -height, 0, 0);//如果用FrameLayout,则setPadding失败
 		return view;
 	}
 	
@@ -174,11 +210,17 @@ public class GamePullToRefreshListView extends ListView {
 					// 更改成松开刷新状态
 					if (-headerViewHeight + offsetY > 0 && downStatus == PULL_TO_REFRESH) {
 						downStatus = RELEASE_TO_REFRESH;
+						tvStatus.setText("松开刷新");
+						ivArrow.clearAnimation();
+						ivArrow.startAnimation(pull);
 					}
 					// 如果headerView没有整个都滑出 且 处于松开刷新状态
 					// 更改成下拉刷新状态
 					if (-headerViewHeight + offsetY < 0 && downStatus == RELEASE_TO_REFRESH) {
 						downStatus = PULL_TO_REFRESH;
+						tvStatus.setText("下拉刷新");
+						ivArrow.clearAnimation();
+						ivArrow.startAnimation(release);
 					}
 					return true;// 拦截事件
 				}
@@ -213,6 +255,11 @@ public class GamePullToRefreshListView extends ListView {
 
 	private void pullDownRefreshing() {
 		downStatus = REFRESHING;
+		// 先清除动画,才能设置不可见
+		ivArrow.clearAnimation();
+		ivArrow.setVisibility(View.GONE);
+		pbRotate.setVisibility(View.VISIBLE);
+		tvStatus.setText("刷新中");
 		if (onRefreshListener == null) {
 			postDelayed(new Runnable() {
 				@Override
@@ -255,6 +302,11 @@ public class GamePullToRefreshListView extends ListView {
 	public void onComplete(boolean isPullDown) {
 		if (isPullDown) { // 是下拉刷新
 			downStatus = PULL_TO_REFRESH;
+			tvStatus.setText("下拉刷新");
+			ivArrow.clearAnimation();
+			ivArrow.setVisibility(View.VISIBLE);
+			pbRotate.setVisibility(View.GONE);
+			tvTime.setText(sdf.format(new Date()));
 			if (adapter instanceof BaseAdapter) {
 				((BaseAdapter) adapter).notifyDataSetChanged();
 			}
