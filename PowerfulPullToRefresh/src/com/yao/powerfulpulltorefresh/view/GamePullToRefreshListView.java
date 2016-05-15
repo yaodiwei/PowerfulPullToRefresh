@@ -82,9 +82,6 @@ public class GamePullToRefreshListView extends ListView {
 	//加载完成依然保持游戏界面
 	private boolean isCompleteStillPlayingGame = true;
 	
-	
-	
-	
 
 	public GamePullToRefreshListView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
