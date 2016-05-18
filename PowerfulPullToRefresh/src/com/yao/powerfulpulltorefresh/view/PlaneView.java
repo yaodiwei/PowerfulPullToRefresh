@@ -22,6 +22,7 @@ import com.yao.powerfulpulltorefresh.R;
 import com.yao.powerfulpulltorefresh.bean.Bullet;
 import com.yao.powerfulpulltorefresh.bean.EnemyPlane;
 import com.yao.powerfulpulltorefresh.bean.MyPlane;
+import com.yao.powerfulpulltorefresh.bean.MyPlane.Status;
 import com.yao.powerfulpulltorefresh.util.UiUtils;
 
 public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
@@ -64,7 +65,63 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 		setFocusableInTouchMode(true);
 		this.setKeepScreenOn(true);
 		//holder.setFormat(PixelFormat.OPAQUE);
+	}
+	
+	
+	/**
+	 * 
+	 */
+	public void switchGame(boolean open){
+		if (open) {
+			if (myPlane.status == Status.D) {
+				initGame();
+			}
+			final Paint paint = new Paint();
+			timer = new Timer();
+			task = new TimerTask() {
+				@Override
+				public void run() {
 
+					continueInitEnemyPlane();
+					continueInitBullet();
+					
+					Canvas canvas = holder.lockCanvas();
+					canvas.drawColor(Color.WHITE);
+					
+					//画敌机
+					Iterator<EnemyPlane> itPlane = enemyPlanes.iterator();
+					while (itPlane.hasNext()) {
+						EnemyPlane ep = itPlane.next();
+						if (ep.y > height || ep.status == EnemyPlane.Status.C) {
+							itPlane.remove();
+						} else {
+							ep.draw(canvas, paint, bullets);
+						}
+					}
+
+					//画子弹
+					Iterator<Bullet> itBullet = bullets.iterator();
+					while (itBullet.hasNext()) {
+						Bullet bullet = itBullet.next();
+						if (bullet.y + Bullet.height < 0) {
+							itBullet.remove();
+						} else {
+							bullet.draw(canvas, paint);
+						}
+					}
+
+					//画我机
+					myPlane.draw(canvas, paint, enemyPlanes);
+
+					holder.unlockCanvasAndPost(canvas);
+
+				}
+
+			};
+			timer.schedule(task, 0, 20);
+		} else {
+			timer.cancel();
+		}
 	}
 
 	@Override
@@ -77,52 +134,16 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 		enemyPlaneHeight = options.outHeight * (int) (getResources().getDisplayMetrics().density);
 		width = getWidth();
 		height = getHeight();
+		initGame();
+
+		
+//		timer.schedule(task, 0, 20);
+	}
+
+	private void initGame() {
 		myPlane = new MyPlane(width, height);
-
-		timer = new Timer();
-		task = new TimerTask() {
-			@Override
-			public void run() {
-
-				continueInitEnemyPlane();
-
-				continueInitBullet();
-
-				Paint paint = new Paint();
-				Canvas canvas = holder.lockCanvas();
-				canvas.drawColor(Color.WHITE);
-
-				//画敌机
-				Iterator<EnemyPlane> itPlane = enemyPlanes.iterator();
-				while (itPlane.hasNext()) {
-					EnemyPlane ep = itPlane.next();
-					if (ep.y > height || ep.status == EnemyPlane.Status.C) {
-						itPlane.remove();
-					} else {
-						ep.draw(canvas, paint, bullets);
-					}
-				}
-
-				//画子弹
-				Iterator<Bullet> itBullet = bullets.iterator();
-				while (itBullet.hasNext()) {
-					Bullet bullet = itBullet.next();
-					if (bullet.y + Bullet.height < 0) {
-						itBullet.remove();
-					} else {
-						bullet.draw(canvas, paint);
-					}
-				}
-
-				//画我机
-				myPlane.draw(canvas, paint, enemyPlanes);
-
-				holder.unlockCanvasAndPost(canvas);
-
-			}
-
-		};
-		timer.schedule(task, 0, 20);
+		enemyPlanes.clear();
+		bullets.clear();
 	}
 
 	@Override
@@ -133,7 +154,9 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		timer.cancel();
+		if (timer != null) {
+			timer.cancel();
+		}
 	}
 	
 	@Override

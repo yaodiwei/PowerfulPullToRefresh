@@ -18,6 +18,9 @@ import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -26,16 +29,26 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.yao.powerfulpulltorefresh.R;
+import com.yao.powerfulpulltorefresh.util.UiUtils;
 
 /**
  * @author YaoDiWei
  * @version
  * @see com.yao.powerfulpulltorefresh.view.SimplePullToRefreshListView.java
  */
+/**
+ * @author Administrator
+ *
+ */
+/**
+ * @author Administrator
+ *
+ */
 public class GamePullToRefreshListView extends ListView {
 	private static final int PULL_TO_REFRESH = 0;
 	private static final int RELEASE_TO_REFRESH = 1;
 	private static final int REFRESHING = 2;
+	private static final int REFRESHED = 3;
 
 	private int downStatus = PULL_TO_REFRESH;
 	private int upStatus = PULL_TO_REFRESH;
@@ -44,6 +57,7 @@ public class GamePullToRefreshListView extends ListView {
 	private ProgressBar pbRotate;
 	private TextView tvStatus;
 	private TextView tvTime;
+	private Button btnBack;
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private ListAdapter adapter;
@@ -52,7 +66,8 @@ public class GamePullToRefreshListView extends ListView {
 	private int headerViewHeight;//整个headerView的高度  即为控件的高度
 	private int notifyHeaderViewHeight;//通知部分的高度
 	private int gameHeaderViewHeight;//飞机游戏部分的高度
-
+	private PlaneView planeView;
+	
 	private View footerView;
 	private int footerViewHeight;
 	
@@ -145,20 +160,43 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private View initHeaderView(Context context) {
-		LinearLayout linearLayout = (LinearLayout) View.inflate(context, R.layout.view_header_plane, null);
+		final LinearLayout linearLayout = (LinearLayout) View.inflate(context, R.layout.view_header_plane, null);
 		ivArrow = (ImageView) linearLayout.findViewById(R.id.ivArrow);
 		pbRotate = (ProgressBar) linearLayout.findViewById(R.id.pbRotate);
 		tvStatus = (TextView) linearLayout.findViewById(R.id.tvStatus);
 		tvTime = (TextView) linearLayout.findViewById(R.id.tvTime);
 		tvTime.setText(sdf.format(new Date()));
+		checkSwitchButton = (CheckSwitchButton) linearLayout.findViewById(R.id.checkSwithcButton);
+		checkSwitchButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				if(isChecked){
+					isCompleteStillPlayingGame = true;
+				}else{
+					isCompleteStillPlayingGame = false;
+				}
+			}
+		});
+		btnBack = (Button) linearLayout.findViewById(R.id.btnBack);
+		btnBack.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (downStatus == REFRESHED) {
+					linearLayout.setPadding(0, -height, 0, 0);
+					downStatus = PULL_TO_REFRESH;
+					planeView.switchGame(false);
+				}
+			}
+		});
 		
 		linearLayout.measure(0, 0);
 		notifyHeaderViewHeight = linearLayout.getMeasuredHeight();
 		headerViewHeight = height;
 		gameHeaderViewHeight = height - notifyHeaderViewHeight;
 		
-//		View view = View.inflate(context, R.layout.view_header_plane, null);//用xml的话不知道屏幕高度height多少,用match_parent的话,surfaceView不会显示出来
-		PlaneView planeView = new PlaneView(context);
+		planeView = new PlaneView(context);
 		LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height - notifyHeaderViewHeight);
 		planeView.setLayoutParams(lp2);
 		linearLayout.addView(planeView, 0);
@@ -191,6 +229,10 @@ public class GamePullToRefreshListView extends ListView {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
+		Log.e("yao", "main onTouchEvent:"+downStatus);
+		if (downStatus == REFRESHED || downStatus == REFRESHING) {
+			return false;
+		}
 		switch (ev.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			startY = (int) ev.getY();
@@ -255,6 +297,7 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private void pullDownRefreshing() {
+		planeView.switchGame(true);
 		downStatus = REFRESHING;
 		// 先清除动画,才能设置不可见
 		ivArrow.clearAnimation();
@@ -300,9 +343,14 @@ public class GamePullToRefreshListView extends ListView {
 		}
 	}
 
+	
+	/**
+	 * @param isPullDown true表示下拉刷新, false表示上拉加载
+	 */
 	public void onComplete(boolean isPullDown) {
 		if (isPullDown) { // 是下拉刷新
-			downStatus = PULL_TO_REFRESH;
+			downStatus = REFRESHED;
+			//TODO 改成完成刷新(玩游戏状态)
 			tvStatus.setText("下拉刷新");
 			ivArrow.clearAnimation();
 			ivArrow.setVisibility(View.VISIBLE);
@@ -333,6 +381,13 @@ public class GamePullToRefreshListView extends ListView {
 		}
 	}
 
+	
+	/**
+	 * @param view 需要移动的控件
+	 * @param isPaddingTop true表示下拉刷新, false表示上拉加载
+	 * @param value1 从value1值
+	 * @param value2 到value2值
+	 */
 	private void startMyValueAnimator(final View view, final boolean isPaddingTop, int value1, int value2) {
 		ValueAnimator animator = ValueAnimator.ofInt(value1, value2);
 		animator.addUpdateListener(new AnimatorUpdateListener() { // 监听值的变化
@@ -353,6 +408,8 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private OnRefreshListener onRefreshListener;
+	private CheckSwitchButton checkSwitchButton;
+	
 
 	public void setOnRefreshListener(OnRefreshListener onRefreshListener) {
 		this.onRefreshListener = onRefreshListener;
