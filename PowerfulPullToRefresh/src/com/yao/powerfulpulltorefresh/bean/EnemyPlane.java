@@ -24,6 +24,7 @@ public class EnemyPlane extends GameObject {
 	public static Bitmap bitmap3;
 	public static int width;
 	public static int height;
+	
 
 	public Status status = Status.A;
 

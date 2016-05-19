@@ -184,7 +184,8 @@ public class GamePullToRefreshListView extends ListView {
 			@Override
 			public void onClick(View v) {
 				if (downStatus == REFRESHED) {
-					linearLayout.setPadding(0, -height, 0, 0);
+//					linearLayout.setPadding(0, -height, 0, 0);
+					startMyValueAnimator(linearLayout, true, 0, -height);
 					downStatus = PULL_TO_REFRESH;
 					planeView.switchGame(false);
 				}
@@ -351,7 +352,7 @@ public class GamePullToRefreshListView extends ListView {
 		if (isPullDown) { // 是下拉刷新
 			downStatus = REFRESHED;
 			//TODO 改成完成刷新(玩游戏状态)
-			tvStatus.setText("下拉刷新");
+			tvStatus.setText("完成刷新");
 			ivArrow.clearAnimation();
 			ivArrow.setVisibility(View.VISIBLE);
 			pbRotate.setVisibility(View.GONE);

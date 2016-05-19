@@ -43,6 +43,8 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 
 	private boolean isFingerOnMyPlane;
 
+	public static int deadEnemyPlaneCount;
+
 	public PlaneView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		initView();
@@ -66,17 +68,18 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 		this.setKeepScreenOn(true);
 		//holder.setFormat(PixelFormat.OPAQUE);
 	}
-	
-	
+
 	/**
 	 * 
 	 */
-	public void switchGame(boolean open){
+	public void switchGame(boolean open) {
 		if (open) {
 			if (myPlane.status == Status.D) {
 				initGame();
 			}
 			final Paint paint = new Paint();
+			paint.setTextSize(UiUtils.dp2px(24));
+			paint.setTextAlign(Paint.Align.LEFT);
 			timer = new Timer();
 			task = new TimerTask() {
 				@Override
@@ -84,16 +87,21 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 
 					continueInitEnemyPlane();
 					continueInitBullet();
-					
+
 					Canvas canvas = holder.lockCanvas();
 					canvas.drawColor(Color.WHITE);
+					
 					
 					//画敌机
 					Iterator<EnemyPlane> itPlane = enemyPlanes.iterator();
 					while (itPlane.hasNext()) {
 						EnemyPlane ep = itPlane.next();
-						if (ep.y > height || ep.status == EnemyPlane.Status.C) {
+						if (ep.y > height) {
 							itPlane.remove();
+						} else if (ep.status == EnemyPlane.Status.C) {
+							itPlane.remove();
+							deadEnemyPlaneCount++;
+							Log.e("yao", "deadEnemyPlaneCount" + deadEnemyPlaneCount);
 						} else {
 							ep.draw(canvas, paint, bullets);
 						}
@@ -112,7 +120,13 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 
 					//画我机
 					myPlane.draw(canvas, paint, enemyPlanes);
-
+					
+					
+					//画标题栏
+					paint.setColor(0x55000000);
+					canvas.drawRect(0, 0, width, UiUtils.dp2px(30), paint);
+					paint.setColor(0xFF000000);
+					canvas.drawText("得分:" + deadEnemyPlaneCount, 0, UiUtils.dp2px(25), paint);
 					holder.unlockCanvasAndPost(canvas);
 
 				}
@@ -136,8 +150,7 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 		height = getHeight();
 		initGame();
 
-		
-//		timer.schedule(task, 0, 20);
+		//		timer.schedule(task, 0, 20);
 	}
 
 	private void initGame() {
@@ -158,7 +171,7 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 			timer.cancel();
 		}
 	}
-	
+
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent event) {
 		getParent().requestDisallowInterceptTouchEvent(true);// 用getParent去请求不拦截
