@@ -140,7 +140,6 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 
 	@Override
 	public void surfaceCreated(final SurfaceHolder holder) {
-		Log.e("yao", "surfaceCreated-----------------------");
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
 		BitmapFactory.decodeResource(UiUtils.getResources(), R.drawable.enemy_plane_1, options);

@@ -54,10 +54,12 @@ public class GamePullToRefreshListView extends ListView {
 	private int upStatus = PULL_TO_REFRESH;
 	
 	private ImageView ivArrow;
-	private ProgressBar pbRotate;
-	private TextView tvStatus;
+	private ProgressBar pbRotateHeader;
+	private ProgressBar pbRotateFooter;
+	private TextView tvStatusHeader;
+	private TextView tvStatusFooter;
 	private TextView tvTime;
-	private Button btnBack;
+	
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private ListAdapter adapter;
@@ -67,9 +69,16 @@ public class GamePullToRefreshListView extends ListView {
 	private int notifyHeaderViewHeight;//通知部分的高度
 	private int gameHeaderViewHeight;//飞机游戏部分的高度
 	private PlaneView planeView;
+	private Button btnBackForHeader;
+	private CheckSwitchButton checkSwitchButtonForHeader;
 	
 	private View footerView;
 	private int footerViewHeight;
+	private int notifyFooterViewHeight;//通知部分的高度
+	private int gameFooterViewHeight;//飞机游戏部分的高度
+	private BallView ballView;
+	private Button btnBackForFooter;
+	private CheckSwitchButton checkSwitchButtonForFooter;
 	
 	private int paddingTop = 0;
 	
@@ -117,8 +126,7 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private void initView(Context context) {
-		footerView = initFooterView(context);
-		addFooterView(footerView);
+		
 		
 		this.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 			
@@ -128,6 +136,9 @@ public class GamePullToRefreshListView extends ListView {
 				height = getHeight();
 				headerView = initHeaderView(getContext());
 				addHeaderView(headerView);
+				
+				footerView = initFooterView(getContext());
+				addFooterView(footerView);
 			}
 		});
 
@@ -162,12 +173,12 @@ public class GamePullToRefreshListView extends ListView {
 	private View initHeaderView(Context context) {
 		final LinearLayout linearLayout = (LinearLayout) View.inflate(context, R.layout.view_header_plane, null);
 		ivArrow = (ImageView) linearLayout.findViewById(R.id.ivArrow);
-		pbRotate = (ProgressBar) linearLayout.findViewById(R.id.pbRotate);
-		tvStatus = (TextView) linearLayout.findViewById(R.id.tvStatus);
+		pbRotateHeader = (ProgressBar) linearLayout.findViewById(R.id.pbRotate);
+		tvStatusHeader = (TextView) linearLayout.findViewById(R.id.tvStatus);
 		tvTime = (TextView) linearLayout.findViewById(R.id.tvTime);
 		tvTime.setText(sdf.format(new Date()));
-		checkSwitchButton = (CheckSwitchButton) linearLayout.findViewById(R.id.checkSwithcButton);
-		checkSwitchButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+		checkSwitchButtonForHeader = (CheckSwitchButton) linearLayout.findViewById(R.id.checkSwithcButton);
+		checkSwitchButtonForHeader.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -178,8 +189,8 @@ public class GamePullToRefreshListView extends ListView {
 				}
 			}
 		});
-		btnBack = (Button) linearLayout.findViewById(R.id.btnBack);
-		btnBack.setOnClickListener(new OnClickListener() {
+		btnBackForHeader = (Button) linearLayout.findViewById(R.id.btnBack);
+		btnBackForHeader.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -209,12 +220,57 @@ public class GamePullToRefreshListView extends ListView {
 	}
 	
 	private View initFooterView(Context context) {
-		View view = View.inflate(context, R.layout.view_footer, null);
-		view.measure(0, 0);
-		footerViewHeight = view.getMeasuredHeight();
-		Log.e("yao", "footerViewHeight:" + footerViewHeight);
-		view.setPadding(0, 0, 0, -footerViewHeight);
-		return view;
+		final LinearLayout linearLayout = (LinearLayout) View.inflate(context, R.layout.view_footer_ball, null);
+		pbRotateFooter = (ProgressBar) linearLayout.findViewById(R.id.pbRotate);
+		tvStatusFooter = (TextView) linearLayout.findViewById(R.id.tvStatus);
+		checkSwitchButtonForFooter = (CheckSwitchButton) linearLayout.findViewById(R.id.checkSwithcButton);
+		checkSwitchButtonForFooter.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				if(isChecked){
+					isCompleteStillPlayingGame = true;
+				}else{
+					isCompleteStillPlayingGame = false;
+				}
+			}
+		});
+		btnBackForFooter = (Button) linearLayout.findViewById(R.id.btnBack);
+		btnBackForFooter.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (upStatus == REFRESHED) {
+					startMyValueAnimator(footerView, false, 0, -footerViewHeight);
+					upStatus = PULL_TO_REFRESH;
+//					planeView.switchGame(false);
+					pbRotateFooter.setVisibility(View.VISIBLE);
+					tvStatusFooter.setText("加载中    ");
+//					if (adapter instanceof BaseAdapter) {
+//						((BaseAdapter) adapter).notifyDataSetChanged();
+//					}
+				}
+			}
+		});
+		
+		
+		linearLayout.measure(0, 0);
+		notifyFooterViewHeight = linearLayout.getMeasuredHeight();
+		footerViewHeight = height;
+		gameFooterViewHeight = height - notifyFooterViewHeight;
+		
+		ballView = new BallView(context);
+		LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height - notifyFooterViewHeight);
+		ballView.setLayoutParams(lp2);
+		linearLayout.addView(ballView);
+//		view.setPadding(0, -height, 0, 0);
+		
+		linearLayout.setPadding(0, 0, 0, -height);
+		
+		
+//		linearLayout.measure(0, 0);
+//		footerViewHeight = linearLayout.getMeasuredHeight();
+//		Log.e("yao", "footerViewHeight:" + footerViewHeight);
+//		linearLayout.setPadding(0, 0, 0, -footerViewHeight);
+		return linearLayout;
 	}
 
 	@Override
@@ -230,7 +286,6 @@ public class GamePullToRefreshListView extends ListView {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-		Log.e("yao", "main onTouchEvent:"+downStatus);
 		if (downStatus == REFRESHED || downStatus == REFRESHING) {
 			return false;
 		}
@@ -254,7 +309,7 @@ public class GamePullToRefreshListView extends ListView {
 					// 更改成松开刷新状态
 					if (-notifyHeaderViewHeight + offsetY > 0 && downStatus == PULL_TO_REFRESH) {
 						downStatus = RELEASE_TO_REFRESH;
-						tvStatus.setText("松开刷新");
+						tvStatusHeader.setText("松开刷新");
 						ivArrow.clearAnimation();
 						ivArrow.startAnimation(pull);
 					}
@@ -262,7 +317,7 @@ public class GamePullToRefreshListView extends ListView {
 					// 更改成下拉刷新状态
 					if (-notifyHeaderViewHeight + offsetY < 0 && downStatus == RELEASE_TO_REFRESH) {
 						downStatus = PULL_TO_REFRESH;
-						tvStatus.setText("下拉刷新");
+						tvStatusHeader.setText("下拉刷新");
 						ivArrow.clearAnimation();
 						ivArrow.startAnimation(release);
 					}
@@ -303,8 +358,8 @@ public class GamePullToRefreshListView extends ListView {
 		// 先清除动画,才能设置不可见
 		ivArrow.clearAnimation();
 		ivArrow.setVisibility(View.GONE);
-		pbRotate.setVisibility(View.VISIBLE);
-		tvStatus.setText("刷新中");
+		pbRotateHeader.setVisibility(View.VISIBLE);
+		tvStatusHeader.setText("刷新中");
 		if (onRefreshListener == null) {
 			postDelayed(new Runnable() {
 				@Override
@@ -324,7 +379,7 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private void pullUpRefreshing() {
-		Log.e("yao", "上拉加载:" + getCount());
+		ballView.switchGame(true);
 		upStatus = REFRESHING;
 		if (onRefreshListener == null) {
 			postDelayed(new Runnable() {
@@ -337,6 +392,7 @@ public class GamePullToRefreshListView extends ListView {
 			onRefreshListener.onPullUpToRefresh();
 		}
 		if (isSmoothMovement && footerViewHeight!=0) {
+			Log.e("yao", "footerViewHeight" + footerViewHeight);
 			startMyValueAnimator(footerView, false, -footerViewHeight, 0);
 		} else {
 			footerView.setPadding(0, 0, 0, 0);
@@ -352,10 +408,10 @@ public class GamePullToRefreshListView extends ListView {
 		if (isPullDown) { // 是下拉刷新
 			downStatus = REFRESHED;
 			//TODO 改成完成刷新(玩游戏状态)
-			tvStatus.setText("完成刷新");
+			tvStatusHeader.setText("完成刷新");
 			ivArrow.clearAnimation();
 			ivArrow.setVisibility(View.VISIBLE);
-			pbRotate.setVisibility(View.GONE);
+			pbRotateHeader.setVisibility(View.GONE);
 			tvTime.setText(sdf.format(new Date()));
 			if (adapter instanceof BaseAdapter) {
 				((BaseAdapter) adapter).notifyDataSetChanged();
@@ -370,14 +426,18 @@ public class GamePullToRefreshListView extends ListView {
 				}
 			}
 		} else { // 是上拉加载
-			upStatus = PULL_TO_REFRESH;
-			if (isSmoothMovement && 0!=footerViewHeight) {
-				startMyValueAnimator(footerView, false, 0, -footerViewHeight);
+			upStatus = REFRESHED;
+			tvStatusFooter.setText("加载完成");
+			setSelection(getCount());//防止在顶部显示出一条Item
+			pbRotateFooter.setVisibility(View.INVISIBLE);
+			if (isCompleteStillPlayingGame) {
+				
 			} else {
-				footerView.setPadding(0, 0, 0, -footerViewHeight);
-			}
-			if (adapter instanceof BaseAdapter) {
-				((BaseAdapter) adapter).notifyDataSetChanged();
+				if (isSmoothMovement && 0!=footerViewHeight) {
+					startMyValueAnimator(footerView, false, 0, -footerViewHeight);
+				} else {
+					footerView.setPadding(0, 0, 0, -footerViewHeight);
+				}
 			}
 		}
 	}
@@ -409,8 +469,6 @@ public class GamePullToRefreshListView extends ListView {
 	}
 
 	private OnRefreshListener onRefreshListener;
-	private CheckSwitchButton checkSwitchButton;
-	
 
 	public void setOnRefreshListener(OnRefreshListener onRefreshListener) {
 		this.onRefreshListener = onRefreshListener;

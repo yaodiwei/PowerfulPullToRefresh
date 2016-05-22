@@ -13,7 +13,7 @@ import com.yao.powerfulpulltorefresh.R;
 import com.yao.powerfulpulltorefresh.bean.EnemyPlane.Status;
 import com.yao.powerfulpulltorefresh.util.UiUtils;
 
-public class MyPlane extends GameObject {
+public class MyPlane extends BaseGameBean {
 
 	public static Bitmap bitmap1;
 	public static Bitmap bitmap2;
@@ -53,7 +53,6 @@ public class MyPlane extends GameObject {
 
 	private int exploreTimes;
 	public void draw(Canvas canvas, Paint paint, ArrayList<EnemyPlane> eps) {
-		canvas.save();
 		if (status==Status.A || status==Status.B){
 			if (isHit(eps)) {
 				status = Status.C;
@@ -94,7 +93,6 @@ public class MyPlane extends GameObject {
 				
 			}
 		}
-		canvas.restore();
 	}
 	
 	public void setTarget(int x, int y) {

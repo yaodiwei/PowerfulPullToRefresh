@@ -17,7 +17,7 @@ import com.yao.powerfulpulltorefresh.util.UiUtils;
  * @version
  * @see com.yao.powerfulpulltorefresh.EnemyPlane.java
  */
-public class EnemyPlane extends GameObject {
+public class EnemyPlane extends BaseGameBean {
 
 	public static Bitmap bitmap1;
 	public static Bitmap bitmap2;
@@ -49,9 +49,8 @@ public class EnemyPlane extends GameObject {
 	}
 
 	public void draw(Canvas canvas, Paint paint, ArrayList<Bullet> bullets) {
-		canvas.save();
 		if (status == Status.A) {
-			if (isHit(bullets)) {
+			if (isCollide(bullets)) {
 				status = Status.B;
 				canvas.drawBitmap(bitmap2, x, y, paint);
 			} else {
@@ -62,10 +61,9 @@ public class EnemyPlane extends GameObject {
 			status = Status.C;
 			canvas.drawBitmap(bitmap3, x, y, paint);
 		}
-		canvas.restore();
 	}
 
-	public boolean isHit(ArrayList<Bullet> bullets) {
+	public boolean isCollide(ArrayList<Bullet> bullets) {
 		Iterator<Bullet> itBullet = bullets.iterator();
 		while (itBullet.hasNext()) {
 			Bullet bullet = itBullet.next();

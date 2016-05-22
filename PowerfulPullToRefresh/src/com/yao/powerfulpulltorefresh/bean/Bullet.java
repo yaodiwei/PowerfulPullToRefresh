@@ -19,7 +19,7 @@ import com.yao.powerfulpulltorefresh.util.UiUtils;
  * @version 
  * @see com.yao.powerfulpulltorefresh.bean.Bullet.java
  */
-public class Bullet extends GameObject {
+public class Bullet extends BaseGameBean {
 
 	public static Bitmap bitmap;
 	public static int width;
@@ -44,8 +44,6 @@ public class Bullet extends GameObject {
 	public void draw(Canvas canvas, Paint paint) {
 //		x += speedX;
 		y += speedY;
-		canvas.save();
 		canvas.drawBitmap(bitmap, x, y, paint);
-		canvas.restore();
 	}
 }

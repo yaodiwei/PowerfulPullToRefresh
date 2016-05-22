@@ -14,7 +14,7 @@ public class MainActivity extends Activity {
 	private ArrayList<String> list;
 	private ExampleAdapter adapter;
 	private int i = 0;
-	private int j = 20;
+	private int maxPos = 10;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
-						list.add("data  " + (j++));
+						list.add("data  " + (maxPos++));
 						runOnUiThread(new Runnable() {
 
 							@Override
@@ -77,9 +77,10 @@ public class MainActivity extends Activity {
 		});
 	}
 
+	
 	private ArrayList<String> getDatas() {
 		ArrayList<String> list = new ArrayList<String>();
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < maxPos; i++) {
 			list.add("data  " + i);
 		}
 		return list;
