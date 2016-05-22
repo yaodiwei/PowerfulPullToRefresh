@@ -158,7 +158,6 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 				if (ball.x < brick.x && ball.x + ball.radius > brick.x) {//碰撞左边
 					ball.speedX = -ball.speedX;
 					result = true;
-					break;
 				} else if (ball.x-ball.radius < brick.x+Brick.width && ball.x > brick.x+Brick.width) {//碰撞右边
 					ball.speedX = -ball.speedX;
 					result = true;
