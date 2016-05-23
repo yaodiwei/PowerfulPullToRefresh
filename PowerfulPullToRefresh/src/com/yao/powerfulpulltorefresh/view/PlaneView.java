@@ -194,12 +194,6 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 				isFingerOnMyPlane = false;
 			}
 		}
-		if (y - MyPlane.height / 2 < 0) {
-			y = y - MyPlane.height;
-		}
-		if (y - MyPlane.height / 2 > height) {
-			y = height - MyPlane.height / 2;
-		}
 		//		myPlane.x = x - MyPlane.width / 2;
 		//		myPlane.y = y - MyPlane.height / 2;
 		return true;

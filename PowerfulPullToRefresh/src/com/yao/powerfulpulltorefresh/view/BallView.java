@@ -10,12 +10,14 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.yao.powerfulpulltorefresh.bean.Ball;
 import com.yao.powerfulpulltorefresh.bean.Brick;
 import com.yao.powerfulpulltorefresh.bean.Guard;
+import com.yao.powerfulpulltorefresh.bean.MyPlane;
 import com.yao.powerfulpulltorefresh.util.UiUtils;
 
 public class BallView extends SurfaceView implements SurfaceHolder.Callback {
@@ -112,7 +114,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 					}
 					
 					//画自己挡板守卫
-//					guard.draw(canvas, paint);
+					guard.draw(canvas, paint);
 					
 					//画球
 					isCollide();
@@ -187,6 +189,42 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 		
 		
 		if (result == true) {
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent event) {
+		getParent().requestDisallowInterceptTouchEvent(true);// 用getParent去请求不拦截
+		return super.dispatchTouchEvent(event);
+	}
+	
+	private boolean downOnGuard;
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		int x = (int) event.getX();
+		int y = (int) event.getY();
+		if (event.getAction() == MotionEvent.ACTION_MOVE) {
+			if (downOnGuard) {
+				guard.x = x - guard.width/2;
+			}
+		} else if (event.getAction() == MotionEvent.ACTION_DOWN) {
+			if (isTouchOnGuard(x, y)) {
+				downOnGuard = true;
+			}
+		} else if (event.getAction() == MotionEvent.ACTION_UP) {
+			if (downOnGuard == true) {
+				downOnGuard = false;
+			}
+		}
+		return true;
+	}
+	
+	private boolean isTouchOnGuard(int x, int y) {
+		//-40和+40是对高度范围的扩大
+		if (x > guard.x && x < guard.x + guard.width && 
+				y > guard.y - 40 && y < guard.y + guard.height + 40) {
 			return true;
 		}
 		return false;
