@@ -133,10 +133,15 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 	public boolean isCollide() {
 		//检测是否和砖块碰撞
 		boolean result = false;
+		
+		ball.x = ball.x + ball.speedX;
+		ball.y = ball.y + ball.speedY;
+		
 		Iterator<Brick> it = bricks.iterator();
 		while (it.hasNext()) {
 			Brick brick = it.next();
 
+			
 			if (Math.pow((brick.x - ball.x), 2) + Math.pow((brick.y - ball.y), 2) <= ball.radius * ball.radius//左上角
 					|| Math.pow((brick.x + Brick.width - ball.x), 2) + Math.pow((brick.y - ball.y), 2) <= ball.radius * ball.radius//右上角
 					|| Math.pow((brick.x - ball.x), 2) + Math.pow((brick.y + Brick.height - ball.y), 2) <= ball.radius * ball.radius//左下角
@@ -145,26 +150,63 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 				ball.speedY = -ball.speedY;
 				result = true;
 			}
-
-			if (brick.x < ball.x && brick.x + Brick.width > ball.x) {
-				if (ball.y < brick.y && ball.y + ball.radius > brick.y) {//碰撞顶边
+			
+			
+			if (brick.x <= ball.x && ball.x <= brick.x + Brick.width) { // 砖块左 <= 圆心x <= 砖块右
+				if (ball.y <= brick.y && brick.y <= ball.y + ball.radius) {//  圆心y <= 砖块顶边 <= 圆底切线
+					// 碰撞顶边条件成立
+					
+					//4句代码防止球冲进砖块内部(只能碰到砖块的边)
+					int ballShouldY = brick.y - ball.radius;
+					int diff = ball.y - ballShouldY;
+					ball.x = ball.x - diff * (ball.speedX>0?1:-1);
+					ball.y = ballShouldY;
+					
+					//y转向
 					ball.speedY = -ball.speedY;
 					result = true;
-				} else if (ball.y-ball.radius < brick.y+Brick.height && ball.y > brick.y+Brick.height) {//碰撞底边
+				} else if (ball.y-ball.radius <= brick.y+Brick.height && brick.y+Brick.height <= ball.y) {// 圆顶切线 <= 砖块底边 <= 圆心
+					// 碰撞底边条件成立
+					
+					//4句代码系列
+					int ballShouldY = brick.y + Brick.height + ball.radius;
+					int diff = ballShouldY - ball.y;
+					ball.x = ball.x - diff * (ball.speedX>0?1:-1);
+					ball.y = ballShouldY;
+					
+					//y转向
 					ball.speedY = -ball.speedY;
 					result = true;
 				}
 			}
 			
-			if (brick.y < ball.y && brick.y + Brick.height > ball.y) {
-				if (ball.x < brick.x && ball.x + ball.radius > brick.x) {//碰撞左边
-					ball.speedX = -ball.speedX;
+			if (brick.y <= ball.y && ball.y <= brick.y + Brick.height) { // 砖块上 <= 圆心y <= 砖块下
+				if (ball.x <= brick.x && brick.x <= ball.x + ball.radius) { // 圆心 <= 砖块左边 <= 圆右切线
+					//碰撞左边条件成立
+					
+					//4句代码系列
+					int ballShouldX = brick.x - ball.radius;
+					int diff = ball.x - ballShouldX;
+					ball.y = ball.y - diff * (ball.speedY>0?1:-1);
+					ball.x = ballShouldX;
+					
+					ball.speedX = -ball.speedX;//x转向
 					result = true;
-				} else if (ball.x-ball.radius < brick.x+Brick.width && ball.x > brick.x+Brick.width) {//碰撞右边
-					ball.speedX = -ball.speedX;
+				} else if (ball.x-ball.radius <= brick.x+Brick.width && brick.x+Brick.width <= ball.x) {// 圆左切线 <= 砖块右边 <= 圆心
+					//碰撞右边条件成立
+					
+					//4句代码系列
+					int ballShouldX = brick.x + Brick.width + ball.radius;
+					int diff = ballShouldX - ball.x;
+					ball.y = ball.y - diff * (ball.speedY>0?1:-1);
+					ball.x = ballShouldX;
+					
+					ball.speedX = -ball.speedX;//x转向
 					result = true;
 				}
 			}
+			
+
 			
 			if (result == true) {
 				it.remove();

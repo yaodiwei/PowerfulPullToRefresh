@@ -25,8 +25,6 @@ public class Ball extends BaseGameBean {
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(0xFFFFFFFF);
 		canvas.drawCircle(x, y, radius, paint);
-		x = x + speedX;
-		y = y + speedY;
 	}
 
 
