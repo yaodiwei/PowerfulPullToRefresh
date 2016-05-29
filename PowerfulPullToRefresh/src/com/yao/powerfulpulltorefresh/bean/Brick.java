@@ -14,6 +14,7 @@ public class Brick extends BaseGameBean {
 		Brick.width = width;
 		Brick.height = height;
 	}
+	
 
 	//传x, y坐标
 //	public Brick(int x, int y) {

@@ -78,6 +78,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 		boolean[] visible = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, false, true, true, true, true, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, false, false, false};		
 		
 		
+		
 		for (int row=0; row<BRICK_ROW; row++) {
 			for (int col=0; col<BRICK_COL; col++){
 				Brick brick = new Brick(col, row);
