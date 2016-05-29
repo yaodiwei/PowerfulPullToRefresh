@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -29,7 +28,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.yao.powerfulpulltorefresh.R;
-import com.yao.powerfulpulltorefresh.util.UiUtils;
 
 /**
  * @author YaoDiWei
@@ -221,6 +219,13 @@ public class GamePullToRefreshListView extends ListView {
 	
 	private View initFooterView(Context context) {
 		final LinearLayout linearLayout = (LinearLayout) View.inflate(context, R.layout.view_footer_ball, null);
+		((Button) linearLayout.findViewById(R.id.save)).setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				ballView.print();
+			}
+		});
 		pbRotateFooter = (ProgressBar) linearLayout.findViewById(R.id.pbRotate);
 		tvStatusFooter = (TextView) linearLayout.findViewById(R.id.tvStatus);
 		checkSwitchButtonForFooter = (CheckSwitchButton) linearLayout.findViewById(R.id.checkSwithcButton);
@@ -241,12 +246,9 @@ public class GamePullToRefreshListView extends ListView {
 				if (upStatus == REFRESHED) {
 					startMyValueAnimator(footerView, false, 0, -footerViewHeight);
 					upStatus = PULL_TO_REFRESH;
-//					planeView.switchGame(false);
+					ballView.switchGame(false);
 					pbRotateFooter.setVisibility(View.VISIBLE);
 					tvStatusFooter.setText("加载中    ");
-//					if (adapter instanceof BaseAdapter) {
-//						((BaseAdapter) adapter).notifyDataSetChanged();
-//					}
 				}
 			}
 		});

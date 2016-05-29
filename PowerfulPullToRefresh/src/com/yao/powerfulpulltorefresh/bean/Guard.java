@@ -7,19 +7,24 @@ public class Guard extends BaseGameBean {
 
 	public int width;
 	public int height;
+	private int viewHeight;
 
 	//传第几列, 第几行
 	public Guard(int viewWidth, int viewHeight) {
 		this.width = viewWidth / 5;
 		this.height = viewHeight / 40;
 		this.x = viewWidth/2 - width/2;
-		this.y = viewHeight/16*15;
+		this.y = viewHeight/16*13;
+		this.viewHeight = viewHeight;
 	}
 
 	public void draw(Canvas canvas, Paint paint) {
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(0xFF374EFA);
 		canvas.drawRect(x, y, x + width, y + height, paint);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(0x66000000);
+		canvas.drawRect(x, y+height, x + width, viewHeight, paint);
 	}
 
 	@Override

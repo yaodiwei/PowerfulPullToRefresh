@@ -1,12 +1,8 @@
 package com.yao.powerfulpulltorefresh.bean;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import com.yao.powerfulpulltorefresh.bean.EnemyPlane.Status;
-
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 
 public class Ball extends BaseGameBean {
 
@@ -20,7 +16,16 @@ public class Ball extends BaseGameBean {
 		this.speedX = speedX;
 		this.speedY = speedY;
 	}
-
+	
+	public Ball(int viewWidth, int viewHeight, int x, int y, int speedX, int speedY) {
+		this.radius = viewWidth / 25;
+		Log.e("yao", "Ball radius = " + radius);
+		this.x = x;
+		this.y = y;
+		this.speedX = speedX;
+		this.speedY = speedY;
+	}
+	
 	public void draw(Canvas canvas, Paint paint) {
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(0xFFFFFFFF);
