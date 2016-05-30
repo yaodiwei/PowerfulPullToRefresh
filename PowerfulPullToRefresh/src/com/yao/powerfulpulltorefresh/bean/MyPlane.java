@@ -86,11 +86,10 @@ public class MyPlane extends BaseGameBean {
 				canvas.drawBitmap(bitmap3, x, y, paint);
 			}
 		} else if (status == Status.D) {
-			exploreTimes++;
 			if (exploreTimes < 20) {
+				exploreTimes++;
 				canvas.drawBitmap(bitmap4, x, y, paint);
 			} else {
-				
 			}
 		}
 	}

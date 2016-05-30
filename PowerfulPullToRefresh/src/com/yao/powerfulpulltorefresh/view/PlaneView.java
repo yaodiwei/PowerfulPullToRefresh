@@ -127,6 +127,14 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 					canvas.drawRect(0, 0, width, UiUtils.dp2px(30), paint);
 					paint.setColor(0xFF000000);
 					canvas.drawText("得分:" + deadEnemyPlaneCount, 0, UiUtils.dp2px(25), paint);
+					
+					//画结束游戏
+					if (myPlane.status == MyPlane.Status.D) {
+						paint.setColor(0xFF000000);
+						int textWidth = (int)paint.measureText("GAME OVER");
+						canvas.drawText("GAME OVER", width/2 - textWidth/2, height/2, paint);
+					}
+					
 					holder.unlockCanvasAndPost(canvas);
 
 				}

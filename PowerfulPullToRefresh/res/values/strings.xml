@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">下拉刷新打飞机,上拉加载玩弹球</string>
+    <string name="app_name">下拉刷新玩战机,上拉加载玩弹球</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 

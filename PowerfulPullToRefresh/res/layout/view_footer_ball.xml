@@ -17,12 +17,6 @@
             android:layout_gravity="center"
             android:layout_weight="1" >
 
-            <com.yao.powerfulpulltorefresh.view.CheckSwitchButton
-                android:id="@+id/checkSwithcButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:enabled="true" />
         </FrameLayout>
 
         <LinearLayout

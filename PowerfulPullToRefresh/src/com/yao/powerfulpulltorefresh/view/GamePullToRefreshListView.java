@@ -68,7 +68,6 @@ public class GamePullToRefreshListView extends ListView {
 	private int gameHeaderViewHeight;//飞机游戏部分的高度
 	private PlaneView planeView;
 	private Button btnBackForHeader;
-	private CheckSwitchButton checkSwitchButtonForHeader;
 	
 	private View footerView;
 	private int footerViewHeight;
@@ -76,7 +75,6 @@ public class GamePullToRefreshListView extends ListView {
 	private int gameFooterViewHeight;//飞机游戏部分的高度
 	private BallView ballView;
 	private Button btnBackForFooter;
-	private CheckSwitchButton checkSwitchButtonForFooter;
 	
 	private int paddingTop = 0;
 	
@@ -175,18 +173,6 @@ public class GamePullToRefreshListView extends ListView {
 		tvStatusHeader = (TextView) linearLayout.findViewById(R.id.tvStatus);
 		tvTime = (TextView) linearLayout.findViewById(R.id.tvTime);
 		tvTime.setText(sdf.format(new Date()));
-		checkSwitchButtonForHeader = (CheckSwitchButton) linearLayout.findViewById(R.id.checkSwithcButton);
-		checkSwitchButtonForHeader.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if(isChecked){
-					isCompleteStillPlayingGame = true;
-				}else{
-					isCompleteStillPlayingGame = false;
-				}
-			}
-		});
 		btnBackForHeader = (Button) linearLayout.findViewById(R.id.btnBack);
 		btnBackForHeader.setOnClickListener(new OnClickListener() {
 			
@@ -228,17 +214,6 @@ public class GamePullToRefreshListView extends ListView {
 		});
 		pbRotateFooter = (ProgressBar) linearLayout.findViewById(R.id.pbRotate);
 		tvStatusFooter = (TextView) linearLayout.findViewById(R.id.tvStatus);
-		checkSwitchButtonForFooter = (CheckSwitchButton) linearLayout.findViewById(R.id.checkSwithcButton);
-		checkSwitchButtonForFooter.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if(isChecked){
-					isCompleteStillPlayingGame = true;
-				}else{
-					isCompleteStillPlayingGame = false;
-				}
-			}
-		});
 		btnBackForFooter = (Button) linearLayout.findViewById(R.id.btnBack);
 		btnBackForFooter.setOnClickListener(new OnClickListener() {
 			@Override

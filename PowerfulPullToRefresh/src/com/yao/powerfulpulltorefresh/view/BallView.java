@@ -73,7 +73,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 		int brickHeight = (int) (height * 0.4 / BRICK_ROW);
 		Brick.setWidthAndHeight(brickWidth, brickHeight);
 		
-		//读档
+		//读档  调试代码用
 		int i = 0;
 		boolean[] visible = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, false, true, true, true, true, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, false, false, false};		
 		
@@ -119,6 +119,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 			if (!isStartGame) {
 				initGame();
 				isStartGame = true;
+				score = 0;
 			}
 			final Paint paint = new Paint();
 			paint.setTextSize(UiUtils.dp2px(24));
@@ -142,13 +143,20 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 					
 					//画球
 					ball.draw(canvas, paint);
-					isCollide();
+					handlerCollide();
 					
 					//画标题栏
 					paint.setColor(0x55000000);
 					canvas.drawRect(0, height-UiUtils.dp2px(30), width, height, paint);
 					paint.setColor(0xFF000000);
 					canvas.drawText("得分:" + score, 0, height-UiUtils.dp2px(5), paint);
+					
+					//画结束游戏
+					if (!isStartGame) {
+						paint.setColor(0xFF000000);
+						int textWidth = (int)paint.measureText("GAME OVER");
+						canvas.drawText("GAME OVER", width/2 - textWidth/2, height/2, paint);
+					}
 					
 					holder.unlockCanvasAndPost(canvas);
 				}
@@ -160,7 +168,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 		}
 	}
 	
-	public boolean isCollide() {
+	public boolean handlerCollide() {
 		//检测是否和砖块碰撞
 		ball.x = ball.x + ball.speedX;
 		ball.y = ball.y + ball.speedY;
@@ -408,9 +416,8 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 			return true;
 		}
 		
-		
-		if (guard.x <= ball.x && ball.x <= guard.x + guard.width) { // 砖块左 <= 圆心x <= 砖块右
-			if (ball.y <= guard.y && guard.y <= ball.y + ball.radius) {//  圆心y <= 砖块顶边 <= 圆底切线
+		if (guard.x <= ball.x && ball.x <= guard.x + guard.width) { // 挡板左 <= 圆心x <= 挡板右
+			if (ball.y <= guard.y && guard.y <= ball.y + ball.radius) {//  圆心y <= 挡板顶边 <= 圆底切线
 				// 碰撞顶边条件成立
 				
 				//4句代码防止球冲进砖块内部(只能碰到砖块的边)
