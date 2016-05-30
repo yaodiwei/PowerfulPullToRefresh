@@ -75,7 +75,8 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 		
 		//读档  调试代码用
 		int i = 0;
-		boolean[] visible = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, false, true, true, true, true, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, false, false, false};		
+		boolean[] visible = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, true, true, true, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false, false, false, false, false, false, false};
+		
 		
 		
 		
@@ -89,7 +90,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 
 		guard = new Guard(width, height);
 		ball = new Ball(width, height, 10, -10);
-//		ball = new Ball(width, height, 498, 259, 10, -10);
+//		ball = new Ball(width, height, 322, 765, -8, -10);
 	}
 	
 	public void print(){
@@ -428,6 +429,13 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 				
 				//y转向
 				ball.speedY = -ball.speedY;
+				
+				// 增加x的变化,以此增加随机性(可删去)
+				// 按照策略 |左方向+10速度 ---------- 不做处理 ---------- 右方向+10速度| 
+				int midGuard = guard.x + guard.width/2;
+				float percentage = (float)(ball.x - midGuard) / (guard.width/2);
+				ball.speedX = ball.speedX + (int) (percentage*10); //10的一个系数
+				Log.e("yao", "percentage: " + percentage + " speedX: " + ball.speedX);
 				return true;
 			}
 		}

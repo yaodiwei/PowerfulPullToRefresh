@@ -238,15 +238,7 @@ public class GamePullToRefreshListView extends ListView {
 		LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height - notifyFooterViewHeight);
 		ballView.setLayoutParams(lp2);
 		linearLayout.addView(ballView);
-//		view.setPadding(0, -height, 0, 0);
-		
 		linearLayout.setPadding(0, 0, 0, -height);
-		
-		
-//		linearLayout.measure(0, 0);
-//		footerViewHeight = linearLayout.getMeasuredHeight();
-//		Log.e("yao", "footerViewHeight:" + footerViewHeight);
-//		linearLayout.setPadding(0, 0, 0, -footerViewHeight);
 		return linearLayout;
 	}
 
@@ -441,7 +433,7 @@ public class GamePullToRefreshListView extends ListView {
 				}
 			}
 		});
-		animator.setDuration(100);
+		animator.setDuration(200);
 		animator.start();
 	}
 
