@@ -432,10 +432,10 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 				
 				// 增加x的变化,以此增加随机性(可删去)
 				// 按照策略 |左方向+10速度 ---------- 不做处理 ---------- 右方向+10速度| 
-				int midGuard = guard.x + guard.width/2;
-				float percentage = (float)(ball.x - midGuard) / (guard.width/2);
-				ball.speedX = ball.speedX + (int) (percentage*10); //10的一个系数
-				Log.e("yao", "percentage: " + percentage + " speedX: " + ball.speedX);
+//				int midGuard = guard.x + guard.width/2;
+//				float percentage = (float)(ball.x - midGuard) / (guard.width/2);
+//				ball.speedX = ball.speedX + (int) (percentage*10); //10的一个系数
+//				Log.e("yao", "percentage: " + percentage + " speedX: " + ball.speedX);
 				return true;
 			}
 		}
