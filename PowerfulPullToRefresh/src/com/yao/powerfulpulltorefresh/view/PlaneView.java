@@ -89,7 +89,7 @@ public class PlaneView extends SurfaceView implements SurfaceHolder.Callback {
 					continueInitBullet();
 
 					Canvas canvas = holder.lockCanvas();
-					canvas.drawColor(Color.WHITE);
+					canvas.drawBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.background), 0, 0, paint);
 					
 					
 					//画敌机
