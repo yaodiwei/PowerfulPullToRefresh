@@ -18,8 +18,6 @@ import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -239,6 +237,15 @@ public class GamePullToRefreshListView extends ListView {
 		ballView.setLayoutParams(lp2);
 		linearLayout.addView(ballView);
 		linearLayout.setPadding(0, 0, 0, -height);
+		
+		linearLayout.setOnTouchListener(new OnTouchListener() {
+			
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				requestDisallowInterceptTouchEvent(true);
+				return true;
+			}
+		});
 		return linearLayout;
 	}
 
