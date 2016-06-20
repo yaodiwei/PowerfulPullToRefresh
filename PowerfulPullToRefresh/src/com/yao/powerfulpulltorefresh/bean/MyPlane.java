@@ -47,8 +47,8 @@ public class MyPlane extends BaseGameBean {
 		this.y = height - MyPlane.height;
 		targetX = x;
 		targetY = y;
-		speedX = 5;
-		speedY = 5;
+		speedX = 10;
+		speedY = 10;
 	}
 
 	private int exploreTimes;

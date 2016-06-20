@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.yao.powerfulpulltorefresh.R;
 import com.yao.powerfulpulltorefresh.bean.Ball;
 import com.yao.powerfulpulltorefresh.bean.Brick;
 import com.yao.powerfulpulltorefresh.bean.Guard;
@@ -72,11 +73,11 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 		int brickWidth = width / BRICK_COL;
 		int brickHeight = (int) (height * 0.4 / BRICK_ROW);
 		Brick.setWidthAndHeight(brickWidth, brickHeight);
+		bricks.clear();
 		
 		//读档  调试代码用
 		int i = 0;
-		boolean[] visible = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, true, true, true, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false, false, false, false, false, false, false};
-		
+		boolean[] visible = new boolean[]{true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, true};		
 		
 		
 		
@@ -90,7 +91,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 
 		guard = new Guard(width, height);
 		ball = new Ball(width, height, 10, -10);
-//		ball = new Ball(width, height, 322, 765, -8, -10);
+//		ball = new Ball(width, height, 588, 892, -10, -10);;
 	}
 	
 	public void print(){
@@ -130,7 +131,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 				@Override
 				public void run() {
 					Canvas canvas = holder.lockCanvas();
-					canvas.drawColor(0xFF2DABC6);
+					canvas.drawColor(UiUtils.getResources().getColor(R.color.bg2));
 					
 					//画砖块
 					Iterator<Brick> it = bricks.iterator();
@@ -142,6 +143,7 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 					//画自己挡板守卫
 					guard.draw(canvas, paint);
 					
+					
 					//画球
 					ball.draw(canvas, paint);
 					handlerCollide();
@@ -149,12 +151,14 @@ public class BallView extends SurfaceView implements SurfaceHolder.Callback {
 					//画标题栏
 					paint.setColor(0x55000000);
 					canvas.drawRect(0, height-UiUtils.dp2px(30), width, height, paint);
-					paint.setColor(0xFF000000);
+					paint.setColor(UiUtils.getResources().getColor(R.color.textColor1));
+					paint.setTextSize(UiUtils.dp2px(18));
 					canvas.drawText("得分:" + score, 0, height-UiUtils.dp2px(5), paint);
 					
 					//画结束游戏
 					if (!isStartGame) {
-						paint.setColor(0xFF000000);
+						paint.setColor(UiUtils.getResources().getColor(android.R.color.white));
+						paint.setTextSize(UiUtils.dp2px(25));
 						int textWidth = (int)paint.measureText("GAME OVER");
 						canvas.drawText("GAME OVER", width/2 - textWidth/2, height/2, paint);
 					}

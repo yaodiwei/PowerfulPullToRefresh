@@ -1,5 +1,8 @@
 package com.yao.powerfulpulltorefresh.bean;
 
+import com.yao.powerfulpulltorefresh.R;
+import com.yao.powerfulpulltorefresh.util.UiUtils;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
@@ -20,10 +23,10 @@ public class Guard extends BaseGameBean {
 
 	public void draw(Canvas canvas, Paint paint) {
 		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(0xFF374EFA);
+		paint.setColor(UiUtils.getResources().getColor(R.color.tcx_blue));
 		canvas.drawRect(x, y, x + width, y + height, paint);
 		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(0x66000000);
+		paint.setColor(0xFF000000);
 		canvas.drawRect(x, y+height, x + width, viewHeight, paint);
 	}
 

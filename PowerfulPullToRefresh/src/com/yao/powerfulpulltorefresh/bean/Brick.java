@@ -1,5 +1,8 @@
 package com.yao.powerfulpulltorefresh.bean;
 
+import com.yao.powerfulpulltorefresh.R;
+import com.yao.powerfulpulltorefresh.util.UiUtils;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
@@ -37,10 +40,10 @@ public class Brick extends BaseGameBean {
 	public void draw(Canvas canvas, Paint paint) {
 		if (visible == true) {
 			paint.setStyle(Paint.Style.FILL);
-			paint.setColor(0xFF374EFA);
+			paint.setColor(UiUtils.getResources().getColor(R.color.tcx_blue));
 			canvas.drawRect(x, y, x + width, y + height, paint);
 			paint.setStyle(Paint.Style.STROKE);
-			paint.setColor(0xFFFFFFFF);
+			paint.setColor(UiUtils.getResources().getColor(R.color.tcx_blue2));
 			canvas.drawRect(x, y, x + width, y + height, paint);
 		}
 	}

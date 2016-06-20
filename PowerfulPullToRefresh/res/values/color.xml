@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="textColor1">#C8F5FF</color>
+    <color name="textColor2">#354157</color>
+    
+    <color name="bg1">#171930</color>
+    <color name="bg2">#171717</color>
+    <color name="tcx_blue">#327B9c</color>
+    <color name="tcx_blue2">#5FABCD</color>
+</resources>
